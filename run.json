@@ -1,0 +1,30 @@
+{
+  "apps": [
+    {
+      "name": "core",
+      "script": "core/index.js",
+      "watch": "core/**/*.js"
+    },
+    {
+      "name": "monitor",
+      "script": "core/monitor.js",
+      "watch": "core/monitor.js"
+    },
+    {
+      "name": "authService",
+      "script": "services/auth/index.js",
+      "watch": "services/auth/**/*.js"
+    },
+    {
+      "name": "userService",
+      "script": "services/user/index.js",
+      "watch": "services/user/**/*.js"
+    },
+    {
+      "name": "projectsService",
+      "script": "services/projects/index.js",
+      "watch": "services/projects/**/*.js"
+    }
+
+  ]
+}

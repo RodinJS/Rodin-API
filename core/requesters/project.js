@@ -1,0 +1,139 @@
+/**
+ * Created by xgharibyan on 6/27/17.
+ */
+
+const cote = require('cote');
+const _  = require('lodash');
+
+const ProjectRequester = new cote.Requester({
+    name: 'projects requester',
+    namespace: 'projects'
+});
+
+
+function _requesterHandler(params){
+    return new Promise((resolve, reject) =>{
+        ProjectRequester.send(params, (err, response)=>{
+            console.log('service err',err);
+            console.log('service response', response);
+            if(err) return reject(err);
+            return resolve(response);
+        })
+    })
+}
+
+function _submit(req, res, params){
+    Object.assign(params, _.pick(req, 'headers', 'body', 'query', 'params'));
+    return _requesterHandler(params)
+        .then(response=> _onSuccess(res, response))
+        .catch(err=> _onError(res, err));
+}
+
+
+function create(req, res, next){
+    const params = { type:'create'};
+    return _submit(req, res, params);
+}
+
+function list(req, res, next){
+    const params = { type:'list'};
+    return _submit(req, res, params);
+}
+
+function count(req, res, next){
+    const params = { type:'count'};
+    return _submit(req, res, params);
+}
+
+function get(req, res, next){
+    const params = { type:'get'};
+    return _submit(req, res, params);
+}
+
+function update(req, res, next){
+    const params = { type:'update'};
+    return _submit(req, res, params);
+}
+
+function remove(req, res, next){
+    const params = { type:'remove'};
+    return _submit(req, res, params);
+}
+
+function publishRollBack(req, res, next){
+    const params = { type:'publishRollBack'};
+    return _submit(req, res, params);
+}
+
+function getPublishedHistory(req, res, next){
+    const params = {type:'getPublishedHistory'};
+    return _submit(req, res, params);
+}
+
+function publishProject(req, res, next){
+    const params = {type:'publishProject'};
+    return _submit(req, res, params);
+}
+
+function rePublishProject(req, res, next){
+    const params = {type:'rePublishProject'};
+    return _submit(req, res, params);
+}
+
+function unPublishProject(req, res, next){
+    const params = {type:'unPublishProject'};
+    return _submit(req, res, params);
+}
+
+function getPublishedProjects(req, res, next){
+    const params = {type:'getPublishedProjects'};
+    return _submit(req, res, params);
+}
+
+function getPublishedProject(req, res, next){
+    const params = {type:'getPublishedProject'};
+    return _submit(req, res, params);
+}
+
+function importOnce(req, res, next){
+    const params = {type:'importOnce'};
+    return _submit(req, res, params);
+}
+
+function getTemplatesList(req, res, next){
+    const params = {type:'getTemplatesList'};
+    return _submit(req, res, params);
+}
+
+function transpile(req, res, next){
+    const params = {type:'transpile'};
+    return _submit(req, res, params);
+}
+
+function _onSuccess(res, data){
+    return res.status(200).json({success:true, data:data});
+}
+
+function _onError(res, err){
+    console.log('Core response', err);
+    return res.status(err.code || 400).json({success:false, data:err.message || `Bad request`});
+}
+
+module.exports = {
+    create:create,
+    list:list,
+    count:count,
+    get:get,
+    update:update,
+    remove:remove,
+    publishRollBack:publishRollBack,
+    getPublishedHistory:getPublishedHistory,
+    publishProject:publishProject,
+    rePublishProject:rePublishProject,
+    unPublishProject:unPublishProject,
+    getPublishedProjects:getPublishedProjects,
+    getPublishedProject:getPublishedProject,
+    importOnce:importOnce,
+    getTemplatesList:getTemplatesList,
+    transpile:transpile
+};
