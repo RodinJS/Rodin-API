@@ -24,6 +24,11 @@
       "name": "projectsService",
       "script": "services/projects/index.js",
       "watch": "services/projects/**/*.js"
+    },
+    {
+      "name": "buildService",
+      "script": "services/build/index.js",
+      "watch": "services/build/**/*.js"
     }
 
   ]

@@ -4,12 +4,57 @@
 
 const express = require('express');
 const validate = require('express-validation');
+const multer = require('multer');
 const paramValidation = require('../configs/paramValidation');
-
 const projectRequester = require('../requesters/project');
+const buildRequester = require('../requesters/build');
+//const buildRouter = require('./build');
+
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, path.join(__dirname, '../../resources/uploads/'));
+    },
+
+    filename: function (req, file, cb) {
+        let nameArray = file.originalname.split('.');
+        nameArray.splice(-1, 0, Date.now());
+        let newName = nameArray.join('.');
+        cb(null, newName);
+    },
+});
 
 const router = express.Router();
-
+const upload = multer({ storage: storage }).fields([
+    {
+        name: 'icon-m',
+        maxCount: 1,
+    },
+    {
+        name: 'icon-h',
+        maxCount: 1,
+    },
+    {
+        name: 'icon-xh',
+        maxCount: 1,
+    },
+    {
+        name: 'icon-xxh',
+        maxCount: 1,
+    },
+    {
+        name: 'icon-xxxh',
+        maxCount: 1,
+    },
+    {
+        name: 'cert',
+        maxCount: 1,
+    },
+    {
+        name: 'profile',
+        maxCount: 1,
+    },
+]);
 
 router.route('/')
     .get(projectRequester.list)
@@ -44,8 +89,14 @@ router.route('/templates/importOnce')
 router.route('/templates/list')
     .get(projectRequester.getTemplatesList);
 
-router.route('/:id/build/transpile')
-   .get(projectRequester.transpile);
+
+router.route('/:id/build/vive')
+    .post(upload, buildRequester.buildVive)
+    .delete(upload, buildRequester.removeVive);
+
+
+//router.route('/:id/build/transpile')
+//   .get(projectRequester.transpile);
 
 
 module.exports = router;
