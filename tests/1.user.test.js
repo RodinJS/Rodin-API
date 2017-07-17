@@ -18,7 +18,7 @@ describe('## User APIs', () => {
             username: 'gagas',
             password: '1234567890AAa',
             invitationCode: '2B5H7B',
-            role: 'Free',
+            role: 'Premium',
             testUser: 'SuperMegaToken_4000dram_test'
         },
         admin: {
@@ -131,7 +131,7 @@ describe('## User APIs', () => {
                 .send(info.user)
                 .expect(httpStatus.SOMETHING_WENT_WRONG)
                 .then(res => {
-                    expect(res.body.success).to.equal(true);
+                    expect(res.body.success).to.equal(false);
                     done();
                 });
         });

@@ -3,12 +3,24 @@
  */
 
 const request = require('supertest-as-promised');
+const Promise = require('bluebird');
 const app = require('../../core/index');
 const UserModel = require('../../models/user');
+const ProjectModel = require('../../models/project');
+const ProjectTemplate = require('../../models/projectTemplate');
 const _ = require('lodash');
 const async = require('async');
 const mongoose = require('mongoose');
-const configs = require('../../config/env/test');
+const config = require('../../config/env/test');
+
+// promisify mongoose
+Promise.promisifyAll(mongoose);
+
+// connect to mongo db
+mongoose.connect(config.db, { server: { socketOptions: { keepAlive: 1 } } });
+mongoose.connection.on('error', () => {
+    throw new Error(`unable to connect to database: ${config.db}`);
+});
 
 const common = {};
 
@@ -40,8 +52,7 @@ function login(done) {
 }
 
 function loginAsGod(done) {
-    request
-    (app)
+    request(app)
         .post('/api/auth/login')
         .send(_.pick(god, 'username', 'password'))
         .then(res => {
@@ -104,8 +115,7 @@ function createGod() {
 }
 
 function dropCollections(callback) {
-    mongoose.connect(configs.db, {server: {socketOptions: {keepAlive: 1}}});
-    let collections = _.keys(mongoose.connection.collections);
+    const collections = _.keys(mongoose.connection.collections); //['users', 'projects', 'modules', 'invitiationcodes'];
     async.forEach(collections, function (collectionName, done) {
         let collection = mongoose.connection.collections[collectionName];
         collection.drop((err) => {

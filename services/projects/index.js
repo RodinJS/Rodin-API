@@ -41,7 +41,7 @@ projectsResponder.on('create', (req, cb) => {
             Object.assign(req, {projectsCount:projectsCount});
             return Ctrl.create(req);
         })
-        .then(created=> cb(null, created))
+        .then(created=> cb(null, created, 201))
         .catch(err=> {
             console.log('project create err', err);
             return cb(err, null);
@@ -112,7 +112,7 @@ projectsResponder.on('remove', (req, cb)=>{
         })
         .then(response=> cb(null, response))
         .catch(err=> {
-            console.log('project count err', err);
+            console.log('project REMOVE ERR', err);
             return cb(err, null);
         })
 });
@@ -160,6 +160,23 @@ projectsResponder.on('publishProject', (req, cb)=>{
         .then(project=>{
             Object.assign(req, {project:project});
             return Ctrl.publishProject(req);
+        })
+        .then(response=> cb(null, response))
+        .catch(err=> {
+            console.log('project rollback err', err);
+            return cb(err, null);
+        })
+});
+
+projectsResponder.on('makePublic', (req, cb)=>{
+    Check.ifTokenValid(req)
+        .then(user=>{
+            Object.assign(req, {user:user});
+            return Ctrl.get(req);
+        })
+        .then(project=>{
+            Object.assign(req, {project:project});
+            return Ctrl.makePublic(req);
         })
         .then(response=> cb(null, response))
         .catch(err=> {

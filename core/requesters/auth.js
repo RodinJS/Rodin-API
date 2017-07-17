@@ -13,8 +13,8 @@ const AuthRequester = new cote.Requester({
 function requesterHandler(params){
     return new Promise((resolve, reject) =>{
         AuthRequester.send(params, (err, response)=>{
-            console.log('service err',err);
-            console.log('service response', response);
+            console.error('service err',err);
+            //console.log('service response', response);
             if(err) return reject(err);
             return resolve(response);
         })
@@ -42,7 +42,7 @@ function _onSuccess(res, data){
 }
 
 function _onError(res, data){
-    console.log('service response error', data.err);
+    console.error('service response error', data.err);
     res.status(data.code || 400).json({success:false, data:data.message || `Bad request`});
 }
 

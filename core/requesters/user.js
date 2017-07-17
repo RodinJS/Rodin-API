@@ -87,7 +87,7 @@ function _onSuccess(res, data){
 }
 
 function _onError(res, err){
-    console.log('Core response', err);
+    console.error('Core response', err);
     return res.status(err.code || 400).json({success:false, data:err.message || `Bad request`});
 }
 

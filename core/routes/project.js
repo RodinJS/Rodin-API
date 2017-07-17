@@ -89,14 +89,14 @@ router.route('/templates/importOnce')
 router.route('/templates/list')
     .get(projectRequester.getTemplatesList);
 
-
 router.route('/:id/build/vive')
     .post(upload, buildRequester.buildVive)
     .delete(upload, buildRequester.removeVive);
 
+router.route('/pp/:id')
+    .post(projectRequester.makePublic)
 
-//router.route('/:id/build/transpile')
-//   .get(projectRequester.transpile);
+
 
 
 module.exports = router;

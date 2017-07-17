@@ -13,11 +13,9 @@ const ProjectRequester = new cote.Requester({
 
 function _requesterHandler(params){
     return new Promise((resolve, reject) =>{
-        ProjectRequester.send(params, (err, response)=>{
-            console.log('service err',err);
-            console.log('service response', response);
+        ProjectRequester.send(params, (err, response, code)=>{
             if(err) return reject(err);
-            return resolve(response);
+            return resolve([response, code]);
         })
     })
 }
@@ -25,7 +23,7 @@ function _requesterHandler(params){
 function _submit(req, res, params){
     Object.assign(params, _.pick(req, 'headers', 'body', 'query', 'params'));
     return _requesterHandler(params)
-        .then(response=> _onSuccess(res, response))
+        .then((response, code)=> _onSuccess(res, response[0], response[1]))
         .catch(err=> _onError(res, err));
 }
 
@@ -110,12 +108,19 @@ function transpile(req, res, next){
     return _submit(req, res, params);
 }
 
-function _onSuccess(res, data){
-    return res.status(200).json({success:true, data:data});
+function makePublic(req, res, next){
+    const params = {type:'makePublic'};
+    return _submit(req, res, params);
+}
+
+function _onSuccess(res, data, code){
+    //console.log('data', data);
+    //console.log('!!--- CODE --- !!', code);
+    return res.status(code || 200).json({success:true, data:data});
 }
 
 function _onError(res, err){
-    console.log('Core response', err);
+    console.error('Core response', err);
     return res.status(err.code || 400).json({success:false, data:err.message || `Bad request`});
 }
 
@@ -135,5 +140,6 @@ module.exports = {
     getPublishedProject:getPublishedProject,
     importOnce:importOnce,
     getTemplatesList:getTemplatesList,
-    transpile:transpile
+    transpile:transpile,
+    makePublic:makePublic
 };

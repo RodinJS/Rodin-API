@@ -34,7 +34,7 @@ function _getStatus(project, device) {
 
         request.get(reqParams, (err, httpResponse, body) => {
             console.log('STATUS: err', err);
-            console.log('STATUS: body', body);
+            //console.log('STATUS: body', body);
 
             const buildResponse = JSON.parse(body);
 
@@ -231,7 +231,7 @@ function get(req) {
     return new Promise((resolve, reject) => {
         Project.getOne(req.params.id, req.user.username)
             .then((project) => {
-                if (!project) return reject(reject(Response.onError(null, `Project is empty`, 404)));
+                if (!project) return reject(Response.onError(null, `Project is empty`, 404));
 
                 if (req.query.device) {
 
@@ -518,6 +518,41 @@ function transpile(req) {
     })
 }
 
+function makePublic(req) {
+   return new Promise((resolve, reject)=>{
+       if (!req.params.id) {
+           return reject(Response.onError(null, `Provide project ID!`, 335));
+       }
+
+       if (!req.body.status) {
+           return reject(Response.onError(null, `Provide project status!`, 335));
+
+       }
+       const id = req.params.id;
+       const username = req.user.username;
+       const status = req.body.status;
+       Project.updateAsync({_id: id}, {$set: {"public": status}})
+           .then(updatedProject => {
+               if (updatedProject.nModified === 1) {
+                   if (status === 'true') {
+                       const srcDir = `${config.stuff_path}projects/${username}/${utils.cleanUrl(req.project.root)}`;
+                       const publicDir = `${config.stuff_path}public/${username}/${utils.cleanUrl(req.project.root)}`;
+                       fsExtra.ensureSymlinkSync(srcDir, publicDir);
+                       return resolve(publicDir)
+                   }
+                   const publicDir = `${config.stuff_path}public/${username}/${utils.cleanUrl(req.project.root)}`;
+                   if (fs.existsSync(publicDir)) {
+                       fs.unlinkSync(publicDir);
+                       return resolve({publicDir});
+                   }
+                   return reject(Response.onError(null, `link exists!`, 335));
+               }
+               reject(Response.onError(null, `Can't make public!`, 400))
+           })
+           .catch(e =>reject(Response.onError(err, `Can't make public!`, 400)));
+   })
+}
+
 module.exports = {
     create: create,
     list: list,
@@ -534,5 +569,6 @@ module.exports = {
     getPublishedProject: getPublishedProject,
     importOnce: importOnce,
     getTemplatesList: getTemplatesList,
-    transpile: transpile
+    transpile: transpile,
+    makePublic:makePublic
 };
