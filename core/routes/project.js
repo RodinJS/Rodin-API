@@ -8,6 +8,7 @@ const multer = require('multer');
 const paramValidation = require('../configs/paramValidation');
 const projectRequester = require('../requesters/project');
 const buildRequester = require('../requesters/build');
+const path = require('path');
 //const buildRouter = require('./build');
 
 
@@ -93,8 +94,20 @@ router.route('/:id/build/vive')
     .post(upload, buildRequester.buildVive)
     .delete(upload, buildRequester.removeVive);
 
+router.route('/:id/build/android')
+    .post(upload, buildRequester.buildAndroid)
+    .delete(upload, buildRequester.removeAndroid);
+
+router.route('/:id/build/ios')
+    .post(upload, buildRequester.buildIos)
+    .delete(upload, buildRequester.removeIos);
+
+router.route('/:id/build/oculus')
+    .post(upload, buildRequester.buildOculus)
+    .delete(upload, buildRequester.removeOculus);
+
 router.route('/pp/:id')
-    .post(projectRequester.makePublic)
+    .post(projectRequester.makePublic);
 
 
 

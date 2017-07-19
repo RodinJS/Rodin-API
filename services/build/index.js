@@ -62,5 +62,106 @@ buildResponder.on('removeVive', (req, cb)=>{
         })
 });
 
+buildResponder.on('buildAndroid', (req, cb)=>{
+    Check.ifTokenValid(req)
+        .then(user=>{
+            Object.assign(req, {user:user});
+            return Check.isProjectOwn(req);
+        })
+        .then(project=>{
+            Object.assign(req, {project:project});
+            return Ctrl.buildAndroid(req);
+        })
+        .then(response=> cb(null, response))
+        .catch(err=> {
+            console.log('build vive err', err);
+            return cb(err, null);
+        })
+});
+
+buildResponder.on('removeAndroid', (req, cb)=>{
+    Check.ifTokenValid(req)
+        .then(user=>{
+            Object.assign(req, {user:user});
+            return Check.isProjectOwn(req);
+        })
+        .then(project=>{
+            Object.assign(req, {project:project});
+            return Ctrl.removeAndroid(req);
+        })
+        .then(response=> cb(null, response))
+        .catch(err=> {
+            console.log('build vive err', err);
+            return cb(err, null);
+        })
+});
+
+buildResponder.on('buildIos', (req, cb)=>{
+    Check.ifTokenValid(req)
+        .then(user=>{
+            Object.assign(req, {user:user});
+            return Check.isProjectOwn(req);
+        })
+        .then(project=>{
+            Object.assign(req, {project:project});
+            return Ctrl.buildIos(req);
+        })
+        .then(response=> cb(null, response))
+        .catch(err=> {
+            console.log('build vive err', err);
+            return cb(err, null);
+        })
+});
+
+buildResponder.on('removeIos', (req, cb)=>{
+    Check.ifTokenValid(req)
+        .then(user=>{
+            Object.assign(req, {user:user});
+            return Check.isProjectOwn(req);
+        })
+        .then(project=>{
+            Object.assign(req, {project:project});
+            return Ctrl.removeIos(req);
+        })
+        .then(response=> cb(null, response))
+        .catch(err=> {
+            console.log('build vive err', err);
+            return cb(err, null);
+        })
+});
+
+buildResponder.on('buildOculus', (req, cb)=>{
+    Check.ifTokenValid(req)
+        .then(user=>{
+            Object.assign(req, {user:user});
+            return Check.isProjectOwn(req);
+        })
+        .then(project=>{
+            Object.assign(req, {project:project});
+            return Ctrl.buildOculus(req);
+        })
+        .then(response=> cb(null, response))
+        .catch(err=> {
+            console.log('build oculus err', err);
+            return cb(err, null);
+        })
+});
+
+buildResponder.on('removeOculus', (req, cb)=>{
+    Check.ifTokenValid(req)
+        .then(user=>{
+            Object.assign(req, {user:user});
+            return Check.isProjectOwn(req);
+        })
+        .then(project=>{
+            Object.assign(req, {project:project});
+            return Ctrl.removeOculus(req);
+        })
+        .then(response=> cb(null, response))
+        .catch(err=> {
+            console.log('build oculus err', err);
+            return cb(err, null);
+        })
+});
 
 //buildResponder.on('*', console.log);
