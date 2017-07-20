@@ -17,7 +17,7 @@ router.route('/me')
     .get(userRequester.me);
 
 router.route('/confirmUsername')
-    .post(userRequester.confirmUsername)
+    .post(userRequester.confirmUsername);
 
 router.route('/password')
     .put(validate(paramValidation.updatePassword), userRequester.updatePassword);

@@ -9,6 +9,7 @@ const RodinSanitizer = require('../../common/sanitizer');
 const authRoutes = require('./auth');
 const userRoutes = require('./user');
 const projectRoutes = require('./project');
+const hooksRoutes = require('./hooks');
 
 const router = express.Router();
 
@@ -24,6 +25,10 @@ const apiRoutes = {
     project: {
         route: '/project',
         module: [RodinSanitizer.makeSanitize, projectRoutes],
+    },
+    hooks: {
+        route: '/hooks',
+        module: [RodinSanitizer.makeSanitize, hooksRoutes],
     },
 };
 

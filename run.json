@@ -29,6 +29,11 @@
       "name": "buildService",
       "script": "services/build/index.js",
       "watch": "services/build/**/*.js"
+    },
+    {
+      "name": "hooksService",
+      "script": "services/hooks/index.js",
+      "watch": "services/hooks/**/*.js"
     }
 
   ]

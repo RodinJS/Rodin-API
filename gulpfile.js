@@ -81,6 +81,7 @@ gulp.task('start:microservices',  (cb) => {
     microServices.user = exec('node ./services/user/index.js');
     microServices.user = exec('node ./services/projects/index.js');
     microServices.user = exec('node ./services/build/index.js');
+    microServices.user = exec('node ./services/hooks/index.js');
     cb();
 });
 
