@@ -34,6 +34,11 @@
       "name": "hooksService",
       "script": "services/hooks/index.js",
       "watch": "services/hooks/**/*.js"
+    },
+    {
+      "name": "gitService",
+      "script": "services/git/index.js",
+      "watch": "services/git/**/*.js"
     }
 
   ]

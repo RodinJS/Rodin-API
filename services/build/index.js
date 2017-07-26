@@ -8,8 +8,6 @@ const mongoose =  require('mongoose');
 const Ctrl = require('./ctrl');
 const config = require('../../config/env');
 const Check = require('../../common/check');
-const userCapacity = require('../../common/directorySize');
-const ProjectsHelper = require('../../common/Projects');
 
 // promisify mongoose
 Promise.promisifyAll(mongoose);

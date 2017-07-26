@@ -10,6 +10,7 @@ const authRoutes = require('./auth');
 const userRoutes = require('./user');
 const projectRoutes = require('./project');
 const hooksRoutes = require('./hooks');
+const gitRoutes = require('./git');
 
 const router = express.Router();
 
@@ -29,6 +30,10 @@ const apiRoutes = {
     hooks: {
         route: '/hooks',
         module: [RodinSanitizer.makeSanitize, hooksRoutes],
+    },
+    git: {
+        route: '/git',
+        module: [RodinSanitizer.makeSanitize, gitRoutes],
     },
 };
 
