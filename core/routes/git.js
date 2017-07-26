@@ -10,10 +10,13 @@ const router = express.Router();
 
 
 router.route('/')
-    .get(gitRequester.initSync)
-    //.get(gitCtrl.getToken, gitCtrl.getUser, authCtrl.socialAuth, gitCtrl.successAuth)
+    .get(gitRequester.initSync);
 
 router.route('/sync')
     .get(gitRequester.sync);
+
+router.route('/theirs')
+    .post(gitRequester.theirs)
+
 
 module.exports = router;

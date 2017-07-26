@@ -7,6 +7,7 @@ const path = require('path');
 const _  = require('lodash');
 const request = require('request-promise');
 const sendgrid = require('sendgrid');
+const git = require('simple-git/promise');
 const config = require('../../config/env');
 const utils = require('../../common/utils');
 const Response = require('../../common/servicesResponses');
@@ -16,6 +17,12 @@ const APIURLS = {
     USER: 'https://api.github.com/user?access_token=',
     EMAIL: 'https://api.github.com/user/emails?access_token=',
 };
+
+
+function _gitPathGenerator(token, clone_url) {
+    let position = clone_url.indexOf('github');
+    return [clone_url.slice(0, position), token, '@', clone_url.slice(position)].join('');
+}
 
 function getToken(req) {
     return new Promise((resolve, reject) => {
@@ -101,9 +108,39 @@ function successSync(req) {
     })
 }
 
+function theirs(req){
+    return new Promise((resolve, reject)=>{
+        if(!req.body.root || !req.body.id)
+            return reject(Response.onError(null, `Project root or project id does not provided!`, 400));
+
+        const projectRoot = config.stuff_path + 'projects/' + req.user.username + '/' + utils.cleanUrl(req.body.root) + '/';
+
+        Project.getOne(req.body.id, req.user.username)
+            .then(project => {
+                const repoUrl = _gitPathGenerator(req.user.githubToken, project.github.https);
+                console.log('projectRoot', projectRoot);
+                git(projectRoot)
+                    .fetch(repoUrl, 'rodin_editor')
+                    .then(response=> git(projectRoot).reset('hard'))
+                    .then(resp=>{
+                        console.log('resp', resp);
+                    })
+                    .catch((err) => console.error('failed: ', err));
+                /*
+                 .clean('df')
+                 .then(() => console.log('finished'))
+                 */
+            })
+            .catch(err=>{
+                console.log('err', err);
+            })
+    })
+}
+
 
 module.exports = {
     getToken: getToken,
     getUser: getUser,
+    theirs:theirs,
     successSync: successSync
 };

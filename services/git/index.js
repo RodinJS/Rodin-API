@@ -60,4 +60,17 @@ gitResponder.on('sync', (req, cb) => {
         })
 });
 
+
+gitResponder.on('theirs', (req, cb)=>{
+    Check.ifTokenValid(req)
+        .then(user=>{
+            Object.assign(req, {user:user});
+            return Ctrl.theirs(req);
+        })
+        .catch(err => {
+            console.log('err', err);
+            cb(err, null)
+        })
+})
+
 //buildResponder.on('*', console.log);

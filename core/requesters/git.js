@@ -39,6 +39,11 @@ function sync(req, res) {
     return _submit(req, res, params);
 }
 
+function theirs(req, res) {
+    const params = {type: 'theirs'};
+    return _submit(req, res, params);
+}
+
 function _onSuccess(res, data, code) {
     if (code === 301) {
         return res.redirect(data);
@@ -57,5 +62,6 @@ function _onError(res, err) {
 
 module.exports = {
     initSync: initSync,
-    sync: sync
+    sync: sync,
+    theirs:theirs
 };
