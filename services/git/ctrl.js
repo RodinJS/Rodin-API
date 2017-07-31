@@ -53,7 +53,6 @@ function _createRepo(repoName, token, project) {
 }
 
 /**
- * TODO: SOCKET NOTIFICATION IMPLEMENTATION
  * @param projectRoot
  * @param repoUrl
  * @param project
@@ -112,7 +111,7 @@ function _sendErrorNotification(project, req, err) {
     }
     notifications.create(req)
         .catch(err => console.log(`notification error`, err));
-    //notifications.pushSocket(req);
+    notifications.pushSocket(req);
 }
 
 function _gitPathGenerator(token, clone_url) {
@@ -354,8 +353,7 @@ function syncProjects(req) {
                     };
                     notifications.create(req);
 
-                    //TODO: IMPLEMENT SOCKET PUSH
-                    // return notifications.pushSocket(req);
+                    return notifications.pushSocket(req);
                 }
             })
             .catch(err => {

@@ -39,6 +39,11 @@
       "name": "gitService",
       "script": "services/git/index.js",
       "watch": "services/git/**/*.js"
+    },
+    {
+      "name": "socketServer",
+      "script": "services/socketServer/index.js",
+      "watch": "services/socketServer/**/*.js"
     }
 
   ]

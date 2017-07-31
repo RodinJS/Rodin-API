@@ -70,24 +70,18 @@ function _sendEmail(req){
             req.notification = `${appName} ${req.params.device} build complete`;
         }
 
-        /**
-         * TODO: Implement socket SS hooks methods
-         */
+
         RDSendgrid.send(req)
             .then(mailSent=>{
-                /*const options = {
-                    method: 'POST',
-                    uri: `${config.socketURL}/ss/hooks`,
-                    body: {
-                        username: req.user.username,
-                        label: req.notification.error ? req.notification.error.message : req.notification.data,
-                        project: _.pick(req.project, ['_id', 'name']),
-                        error: req.notification.error || false,
-                        event: 'projectBuild',
-                    },
-                    json: true, // Automatically stringifies the body to JSON
-                };*/
+                req.notification =  {
+                    username: req.user.username,
+                    label: req.notification.error ? req.notification.error.message : req.notification.data,
+                    project: _.pick(req.project, ['_id', 'name']),
+                    error: req.notification.error || false,
+                    event: 'projectBuild',
+                };
                 notifications.create(req, false, false);
+                notifications.pushSocket(req);
                 return resolve(req.notification);
             })
     })
