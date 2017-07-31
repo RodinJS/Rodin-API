@@ -10,13 +10,23 @@ const router = express.Router();
 
 
 router.route('/')
-    .get(gitRequester.initSync);
+    .get(gitRequester.initSync)
+    .post(gitRequester.create);
 
 router.route('/sync')
     .get(gitRequester.sync);
 
 router.route('/theirs')
-    .post(gitRequester.theirs)
+    .post(gitRequester.theirs);
+
+router.route('/ours')
+    .post(gitRequester.ours);
+
+router.route('/syncProject/:projectId')
+    .post(gitRequester.syncSingleProjects);
+
+router.route('/syncProjects')
+    .post(gitRequester.syncProjects);
 
 
 module.exports = router;

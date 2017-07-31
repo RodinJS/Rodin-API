@@ -34,6 +34,11 @@ function initSync(req, res) {
     return _submit(req, res, params);
 }
 
+function create(req, res) {
+    const params = {type: 'create'};
+    return _submit(req, res, params);
+}
+
 function sync(req, res) {
     const params = {type: 'sync'};
     return _submit(req, res, params);
@@ -41,6 +46,21 @@ function sync(req, res) {
 
 function theirs(req, res) {
     const params = {type: 'theirs'};
+    return _submit(req, res, params);
+}
+
+function ours(req, res) {
+    const params = {type: 'ours'};
+    return _submit(req, res, params);
+}
+
+function syncProjects(req, res) {
+    const params = {type: 'syncProjects'};
+    return _submit(req, res, params);
+}
+
+function syncSingleProjects(req, res) {
+    const params = {type: 'syncSingleProjects'};
     return _submit(req, res, params);
 }
 
@@ -61,7 +81,11 @@ function _onError(res, err) {
 }
 
 module.exports = {
+    create:create,
     initSync: initSync,
     sync: sync,
-    theirs:theirs
+    theirs:theirs,
+    ours:ours,
+    syncProjects:syncProjects,
+    syncSingleProjects:syncSingleProjects
 };

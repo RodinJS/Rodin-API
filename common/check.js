@@ -34,6 +34,7 @@ function ifTokenValid(req) {
                     Object.assign(data, {
                         creationDate: user.createdAt,
                         github: user.github ? user.github.email : false,
+                        githubToken:user.github ? user.github.token : undefined,
                         facebook: user.facebook ? user.facebook.email : false,
                         google: user.google ? user.google.email : false,
                         steam: !!user.steamId,

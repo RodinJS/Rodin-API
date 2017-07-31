@@ -18,7 +18,7 @@ function create(req, res, next) {
     return new Promise((resolve, reject) =>{
         const label = req.notification.error ? req.notification.error.message : _.isObject(req.notification.data) ? req.notification.data.message : req.notification.data;
         const project = req.project ? _.pick(req.project, ['_id', 'name']) : undefined;
-        console.log('NOTIFICATION DATA', req.notification);
+        //console.log('NOTIFICATION DATA', req.notification);
         const notification = new Notifications({
             username: req.user.username,
             label: label,

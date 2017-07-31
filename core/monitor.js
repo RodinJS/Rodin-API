@@ -6,3 +6,4 @@
 const cote = require('cote');
 
 new cote.MonitoringTool(7555);
+//new cote.Monitor({ name: 'Monitor' });
