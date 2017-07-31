@@ -99,8 +99,12 @@ publish/*
 history/*
 !history/.gitkeap
 #uploads
-resrouces/uploads/**/*
-!resrouces/uploads/.gitkeap
+resources/uploads/**/*
+resources/domain_name/**/*
+resources/nginx/**/*
+!resources/uploads/.gitkeap
+!resources/domain_name/.gitkeap
+!resources/nginx/.gitkeap
 
 #github tmp folder
 gago
