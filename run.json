@@ -41,9 +41,19 @@
       "watch": "services/git/**/*.js"
     },
     {
-      "name": "socketServer",
+      "name": "socketServerService",
       "script": "services/socketServer/index.js",
       "watch": "services/socketServer/**/*.js"
+    },
+    {
+      "name": "paymentsService",
+      "script": "services/payments/index.js",
+      "watch": "services/payments/**/*.js"
+    },
+    {
+      "name": "editorService",
+      "script": "services/editor/index.js",
+      "watch": "services/editor/**/*.js"
     }
 
   ]

@@ -12,6 +12,8 @@ const _ = require('lodash');
 const async = require('async');
 const mongoose = require('mongoose');
 const config = require('../../config/env/test');
+const stripeKeys = config.payments.tokens.stripe;
+const stripe = require('stripe')(stripeKeys.secret);
 
 // promisify mongoose
 Promise.promisifyAll(mongoose);
@@ -38,8 +40,7 @@ function login(done) {
         password: '1234567890AAa',
     };
 
-    request
-    (app)
+    request(app)
         .post('/api/auth/login')
         .send(user)
         .then(res => {
@@ -114,6 +115,25 @@ function createGod() {
         });
 }
 
+function createStripeToken(done){
+    stripe.tokens.create({
+        card: {
+            "number": '4242424242424242',
+            "exp_month": 12,
+            "exp_year": 2022,
+            "cvc": '123'
+        }
+    }, (err, token) => {
+        if(err) return console.error('stripe error', err);
+        Object.assign(common, {stripeToken:token.id});
+        done();
+    });
+}
+
+function getStripeToken(){
+    return common.stripeToken;
+}
+
 function dropCollections(callback) {
     const collections = _.keys(mongoose.connection.collections); //['users', 'projects', 'modules', 'invitiationcodes'];
     async.forEach(collections, function (collectionName, done) {
@@ -136,5 +156,7 @@ module.exports = {
     createGod,
     loginAsGod,
     dropCollections,
-    setProject
+    setProject,
+    createStripeToken,
+    getStripeToken
 };

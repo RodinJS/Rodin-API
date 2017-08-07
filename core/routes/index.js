@@ -11,6 +11,8 @@ const userRoutes = require('./user');
 const projectRoutes = require('./project');
 const hooksRoutes = require('./hooks');
 const gitRoutes = require('./git');
+const paymentsRoutes = require('./payments');
+const editorRoutes = require('./editor');
 
 const router = express.Router();
 
@@ -34,6 +36,14 @@ const apiRoutes = {
     git: {
         route: '/git',
         module: [RodinSanitizer.makeSanitize, gitRoutes],
+    },
+    payments: {
+        route: '/payments',
+        module: [RodinSanitizer.makeSanitize, paymentsRoutes],
+    },
+    editor: {
+        route: '/editor',
+        module: [editorRoutes],
     },
 };
 

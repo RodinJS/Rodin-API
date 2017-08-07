@@ -8,6 +8,8 @@ const Promise = require('bluebird');
 const config = require('../config/env');
 const User = require('../models/user');
 const Project = require('../models/project');
+const userCapacity  = require('./directorySize');
+const utils = require('./utils');
 
 function ifTokenValid(req) {
 
@@ -92,10 +94,43 @@ function isProjectOwn(req) {
     });
 }
 
+function validateStorage(req) {
+    return new Promise((resolve, reject)=>{
+        const role = req.user.role.toLowerCase();
+        if (role == 'Admin' || role == 'God') resolve(true);
+        //'Free', 'Premium', 'Enterprise', 'Admin', 'God'
+        const storageSizes = {
+            free: 100,
+            premium: 500,
+            enterprise: 100,
+        };
+
+        const storageMaxCapacity = req.user.storageSize || storageSizes[role];
+        const rootDir = `projects/${req.user.username}`;
+
+        userCapacity.readSizeRecursive(rootDir, (err, size) => {
+            size = err ? 0 : size;
+
+            if (req.files && req.files.length > 0) {
+                _.each(req.files, function (file) {
+                    size += file.size;
+                });
+            }
+
+            if (utils.byteToMb(size) >= storageMaxCapacity) {
+                return reject('Storage is full')
+            }
+
+            resolve(true);
+        });
+    })
+}
+
 module.exports = {
     ifTokenValid: ifTokenValid,
     ifSelfUpdate: ifSelfUpdate,
     validateToken: validateToken,
     project: project,
-    isProjectOwn: isProjectOwn
+    isProjectOwn: isProjectOwn,
+    validateStorage:validateStorage
 };

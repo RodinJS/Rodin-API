@@ -37,8 +37,8 @@ module.exports = {
     payments: {
         tokens: {
             stripe: {
-                secret: 'sk_test_Okevb5aLgncqi6W6lmhItxoV',
-                publish: 'pk_test_ubTC5Za2RM1vj2VlRYPhvX2r',
+                secret: 'sk_test_Yrs9CAb0mtmarXakiICOR57A',
+                publish: 'pk_test_LHEyhlVOjm1mm7WXI2884CyG',
             },
         },
     },

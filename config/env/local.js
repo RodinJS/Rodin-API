@@ -8,7 +8,7 @@ module.exports = {
     socketPort: 4000,
     socketURL: 'http://localhost:4000',
     modules: {
-        ROOT:'http://localhost:4000',
+        ROOT: 'http://localhost:4000',
         socketService: {
             URL: 'http://localhost:4000',
             port: 4000,
@@ -33,8 +33,8 @@ module.exports = {
         github: {
             clientId: '1600631d3a04c8eff4e7',
             clientSecret: '7334447b351bbbad91a5701e4b02b8ab47458789',
-          /*  clientId: '2350afe57c144672285b',
-            clientSecret: '3b16cafe190ecdc3a659198dc32b396b95dff77a',*/
+            /*  clientId: '2350afe57c144672285b',
+             clientSecret: '3b16cafe190ecdc3a659198dc32b396b95dff77a',*/
         },
     },
     urlshortenerkey: 'AIzaSyCe5zVHHHhhv40N-WzeffxWva377dPQnH8',
@@ -53,55 +53,55 @@ module.exports = {
         appId: '2e659ea81e645f84',
         appSecret: 'af7cffae-17ce-25b2-8b76-849df75a',
     },
-  android: {
-    urls: {
-      build: 'http://13.92.235.174:10001/api/v1/project',
-      cancel: 'http://13.92.235.174:10001/api/v1/project',
-      get: 'http://13.92.235.174:10001/api/v1/project',
-      download: 'http://13.92.235.174:10001/api/v1/bin',
-      getStatus: 'http://13.92.235.174:10001/api/v1/status',
+    android: {
+        urls: {
+            build: 'http://13.92.235.174:10001/api/v1/project',
+            cancel: 'http://13.92.235.174:10001/api/v1/project',
+            get: 'http://13.92.235.174:10001/api/v1/project',
+            download: 'http://13.92.235.174:10001/api/v1/bin',
+            getStatus: 'http://13.92.235.174:10001/api/v1/status',
+        },
+        appId: 'f4357582f4711a27',
+        appSecret: '780befc0-fa03-a5ef-f942-94c142da',
     },
-    appId: 'f4357582f4711a27',
-    appSecret: '780befc0-fa03-a5ef-f942-94c142da',
-  },
-  daydream: {
-    urls: {
-      build: 'http://13.92.235.174:10001/api/v1/project',
-      cancel: 'http://13.92.235.174:10001/api/v1/project',
-      get: 'http://13.92.235.174:10001/api/v1/project',
-      download: 'http://13.92.235.174:10001/api/v1/bin',
-      getStatus: 'http://13.92.235.174:10001/api/v1/status',
+    daydream: {
+        urls: {
+            build: 'http://13.92.235.174:10001/api/v1/project',
+            cancel: 'http://13.92.235.174:10001/api/v1/project',
+            get: 'http://13.92.235.174:10001/api/v1/project',
+            download: 'http://13.92.235.174:10001/api/v1/bin',
+            getStatus: 'http://13.92.235.174:10001/api/v1/status',
+        },
+        appId: 'f4357582f4711a27',
+        appSecret: '780befc0-fa03-a5ef-f942-94c142da',
     },
-    appId: 'f4357582f4711a27',
-    appSecret: '780befc0-fa03-a5ef-f942-94c142da',
-  },
-  oculus: {
-    urls: {
-      build: 'http://13.92.235.174:10002/api/v1/project',
-      cancel: 'http://13.92.235.174:10002/api/v1/project',
-      get: 'http://13.92.235.174:10002/api/v1/project',
-      download: 'http://13.92.235.174:10002/api/v1/bin',
-      getStatus: 'http://13.92.235.174:10002/api/v1/status',
+    oculus: {
+        urls: {
+            build: 'http://13.92.235.174:10002/api/v1/project',
+            cancel: 'http://13.92.235.174:10002/api/v1/project',
+            get: 'http://13.92.235.174:10002/api/v1/project',
+            download: 'http://13.92.235.174:10002/api/v1/bin',
+            getStatus: 'http://13.92.235.174:10002/api/v1/status',
+        },
+        appId: 'f07e5efe21c47d2a',
+        appSecret: '61d75b4f-d2d1-3cba-3129-ef4e3c03',
     },
-    appId: 'f07e5efe21c47d2a',
-    appSecret: '61d75b4f-d2d1-3cba-3129-ef4e3c03',
-  },
-  vive: {
-    urls: {
-      build: 'http://13.92.235.174:10003/api/v1/project',
-      cancel: 'http://13.92.235.174:10003/api/v1/project',
-      get: 'http://13.92.235.174:10003/api/v1/project',
-      download: 'http://13.92.235.174:10003/api/v1/bin',
-      getStatus: 'http://13.92.235.174:10003/api/v1/status',
+    vive: {
+        urls: {
+            build: 'http://13.92.235.174:10003/api/v1/project',
+            cancel: 'http://13.92.235.174:10003/api/v1/project',
+            get: 'http://13.92.235.174:10003/api/v1/project',
+            download: 'http://13.92.235.174:10003/api/v1/bin',
+            getStatus: 'http://13.92.235.174:10003/api/v1/status',
+        },
+        appId: 'b17bbf258ca3e14a',
+        appSecret: 'a13ecb3d-2fbe-2d2f-dbb4-21e4cdd0',
     },
-    appId: 'b17bbf258ca3e14a',
-    appSecret: 'a13ecb3d-2fbe-2d2f-dbb4-21e4cdd0',
-  },
     payments: {
         tokens: {
             stripe: {
-                secret: 'sk_test_Okevb5aLgncqi6W6lmhItxoV',
-                publish: 'pk_test_ubTC5Za2RM1vj2VlRYPhvX2r',
+                secret: 'sk_test_Yrs9CAb0mtmarXakiICOR57A',
+                publish: 'pk_test_LHEyhlVOjm1mm7WXI2884CyG',
             },
             paypal: {
                 mode: 'sandbox',
