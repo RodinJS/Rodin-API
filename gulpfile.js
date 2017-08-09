@@ -20,7 +20,6 @@ const paths = {
     tests: './tests/*.js',
     singleTestFile: ['' + testPath + '1.user.test.js', `${testPath}2.projects.test.js`, `${testPath}7.modules.test.js`, '' + testPath + '99.removeUser.test.js'],
 };
-const pm2 = require('pm2');
 const microServices = {auth: null, user: null};
 
 
@@ -169,7 +168,7 @@ gulp.task('singletest', ['set-env'], () => {
 // clean dist, compile js files, copy non-js files and execute tests
 gulp.task('mocha', ['clean'], () => {
     runSequence(
-        ['copy', 'babel'],
+        ['copy'],
         'test'
     );
 });
