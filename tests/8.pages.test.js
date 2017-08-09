@@ -27,7 +27,7 @@ describe('## PAGES APIs ', () => {
                 categoryId = res.body.data[0].id;
                 done();
             });
-    })
+    });
 
     it('should get category articles list form HelpScout', (done) => {
         request(app)
