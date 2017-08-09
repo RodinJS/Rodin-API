@@ -106,6 +106,9 @@ router.route('/:id/build/oculus')
     .post(upload, buildRequester.buildOculus)
     .delete(upload, buildRequester.removeOculus);
 
+router.route('/:id/download/:device')
+    .get(buildRequester.download);
+
 router.route('/pp/:id')
     .post(projectRequester.makePublic);
 

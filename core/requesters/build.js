@@ -70,6 +70,11 @@ function removeOculus(req, res, next){
     return _submit(req, res, params);
 }
 
+function download(req, res, next){
+    const params = {type:'download'};
+    return _submit(req, res, params);
+}
+
 function _onSuccess(res, data){
     return res.status(200).json({success:true, data:data});
 }
@@ -87,5 +92,6 @@ module.exports = {
     buildIos:buildIos,
     removeIos:removeIos,
     buildOculus:buildOculus,
-    removeOculus:removeOculus
+    removeOculus:removeOculus,
+    download:download
 };

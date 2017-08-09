@@ -5,15 +5,15 @@
 const cote = require('cote');
 const _  = require('lodash');
 
-const HooksRequester = new cote.Requester({
-    name: 'editor requester',
-    namespace: 'editor'
+const PagestRequester = new cote.Requester({
+    name: 'pages requester',
+    namespace: 'pages'
 });
 
 
 function _requesterHandler(params){
     return new Promise((resolve, reject) =>{
-        HooksRequester.send(params, (err, response, code)=>{
+        PagestRequester.send(params, (err, response, code)=>{
             if(err) return reject(err);
             return resolve([response, code]);
         })
@@ -27,39 +27,33 @@ function _submit(req, res, params){
         .catch(err=> _onError(res, err));
 }
 
-
-function getFile(req, res, next){
-    const params = { type:'getFile'};
+function pagesList(req, res, next){
+    const params = { type:'pagesList'};
     return _submit(req, res, params);
 }
 
-function putFile(req, res, next){
-    const params = { type:'putFile'};
+function getByUrl(req, res, next){
+    const params = { type:'getByUrl'};
     return _submit(req, res, params);
 }
 
-function postFile(req, res, next){
-    const params = { type:'postFile'};
+function getFaq(req, res, next){
+    const params = { type:'getFaq'};
     return _submit(req, res, params);
 }
 
-function deleteFile(req, res, next){
-    const params = { type:'deleteFile'};
+function getKnowledgeCategories(req, res, next){
+    const params = { type:'getKnowledgeCategories'};
     return _submit(req, res, params);
 }
 
-function searchInsideFiles(req, res, next){
-    const params = { type:'searchInsideFiles'};
+function getKnowlegeCategoryArticles(req, res, next){
+    const params = { type:'getKnowlegeCategoryArticles'};
     return _submit(req, res, params);
 }
 
-function uploadFiles(req, res, next){
-    const params = { type:'uploadFiles'};
-    return _submit(req, res, params);
-}
-
-function getTreeJSON(req, res, next){
-    const params = { type:'getTreeJSON'};
+function getKnowlegeArticle(req, res, next){
+    const params = { type:'getKnowlegeArticle'};
     return _submit(req, res, params);
 }
 
@@ -75,11 +69,10 @@ function _onError(res, err){
 }
 
 module.exports = {
-    getFile:getFile,
-    putFile:putFile,
-    postFile:postFile,
-    deleteFile:deleteFile,
-    searchInsideFiles:searchInsideFiles,
-    uploadFiles:uploadFiles,
-    getTreeJSON:getTreeJSON
+    pagesList,
+    getByUrl,
+    getFaq,
+    getKnowledgeCategories,
+    getKnowlegeCategoryArticles,
+    getKnowlegeArticle
 };
