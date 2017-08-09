@@ -5,15 +5,15 @@
 const cote = require('cote');
 const _  = require('lodash');
 
-const HooksRequester = new cote.Requester({
-    name: 'editor requester',
-    namespace: 'editor'
+const SupportRequester = new cote.Requester({
+    name: 'support requester',
+    namespace: 'support'
 });
 
 
 function _requesterHandler(params){
     return new Promise((resolve, reject) =>{
-        HooksRequester.send(params, (err, response, code)=>{
+        SupportRequester.send(params, (err, response, code)=>{
             if(err) return reject(err);
             return resolve([response, code]);
         })
@@ -27,39 +27,38 @@ function _submit(req, res, params){
         .catch(err=> _onError(res, err));
 }
 
-
-function getFile(req, res, next){
-    const params = { type:'getFile'};
+function getQuestionsList(req, res, next){
+    const params = { type:'getQuestionsList'};
     return _submit(req, res, params);
 }
 
-function putFile(req, res, next){
-    const params = { type:'putFile'};
+function createQuestion(req, res, next){
+    const params = { type:'createQuestion'};
     return _submit(req, res, params);
 }
 
-function postFile(req, res, next){
-    const params = { type:'postFile'};
+function createQuestionThread(req, res, next){
+    const params = { type:'createQuestionThread'};
     return _submit(req, res, params);
 }
 
-function deleteFile(req, res, next){
-    const params = { type:'deleteFile'};
+function getConversation(req, res, next){
+    const params = { type:'getConversation'};
     return _submit(req, res, params);
 }
 
-function searchInsideFiles(req, res, next){
-    const params = { type:'searchInsideFiles'};
+function updateConversation(req, res, next){
+    const params = { type:'updateConversation'};
     return _submit(req, res, params);
 }
 
-function uploadFiles(req, res, next){
-    const params = { type:'uploadFiles'};
+function getTags(req, res, next){
+    const params = { type:'getTags'};
     return _submit(req, res, params);
 }
 
-function getTreeJSON(req, res, next){
-    const params = { type:'getTreeJSON'};
+function searchConversations(req, res, next){
+    const params = { type:'searchConversations'};
     return _submit(req, res, params);
 }
 
@@ -75,11 +74,11 @@ function _onError(res, err){
 }
 
 module.exports = {
-    getFile:getFile,
-    putFile:putFile,
-    postFile:postFile,
-    deleteFile:deleteFile,
-    searchInsideFiles:searchInsideFiles,
-    uploadFiles:uploadFiles,
-    getTreeJSON:getTreeJSON
+    getQuestionsList,
+    createQuestion,
+    createQuestionThread,
+    getConversation,
+    updateConversation,
+    getTags,
+    searchConversations
 };

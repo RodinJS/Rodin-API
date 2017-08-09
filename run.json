@@ -54,7 +54,18 @@
       "name": "editorService",
       "script": "services/editor/index.js",
       "watch": "services/editor/**/*.js"
+    },
+    {
+      "name": "supportService",
+      "script": "services/support/index.js",
+      "watch": "services/support/**/*.js"
+    },
+    {
+      "name": "pagesService",
+      "script": "services/pages/index.js",
+      "watch": "services/pages/**/*.js"
     }
+
 
   ]
 }

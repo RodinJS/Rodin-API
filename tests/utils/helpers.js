@@ -9,4 +9,4 @@ function jsonToQueryString(json) {
         }).join('&');
 }
 
-export default { jsonToQueryString };
+module.exports = { jsonToQueryString };

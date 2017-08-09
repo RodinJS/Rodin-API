@@ -13,6 +13,8 @@ const hooksRoutes = require('./hooks');
 const gitRoutes = require('./git');
 const paymentsRoutes = require('./payments');
 const editorRoutes = require('./editor');
+const supportRoutes = require('./support');
+const pagesRoutes = require('./pages');
 
 const router = express.Router();
 
@@ -45,6 +47,14 @@ const apiRoutes = {
         route: '/editor',
         module: [editorRoutes],
     },
+    support: {
+        route: '/support',
+        module: [supportRoutes],
+    },
+    pagesRoutes:{
+        route:'/pages',
+        module:[pagesRoutes]
+    }
 };
 
 _.each(apiRoutes, (route, key) => {

@@ -12,8 +12,16 @@ router.route('/serve')
     .get(editorRequester.getFile)
     .put(editorRequester.putFile)
     .post(editorRequester.postFile)
-    .delete(editorRequester.deleteFile)
+    .delete(editorRequester.deleteFile);
 
 
+router.route('/search')
+    .get(editorRequester.searchInsideFiles);
+
+router.route('/upload')
+    .post(upload.array('file'), editorRequester.uploadFiles);
+
+router.route('/:id')
+    .get(editorRequester.getTreeJSON);
 
 module.exports = router;

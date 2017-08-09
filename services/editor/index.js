@@ -45,7 +45,6 @@ editoresponder.on('getFile', (req, cb) => {
         .catch(err=> cb(err, null))
 });
 
-
 editoresponder.on('putFile', (req, cb) => {
     Check.ifTokenValid(req)
         .then(user=>{
@@ -85,6 +84,52 @@ editoresponder.on('deleteFile', (req, cb) => {
         .then(project=>{
             Object.assign(req, {project:project});
             return Ctrl.deleteFile(req)
+        })
+        .then(response => cb(null, response))
+        .catch(err=> cb(err, null))
+});
+
+editoresponder.on('searchInsideFiles', (req, cb) => {
+    Check.ifTokenValid(req)
+        .then(user=>{
+            Object.assign(req, {user:user});
+            return Check.project(req);
+        })
+        .then(project=>{
+            Object.assign(req, {project:project});
+            return Ctrl.searchInsideFiles(req)
+        })
+        .then(response => cb(null, response))
+        .catch(err=> cb(err, null))
+});
+
+editoresponder.on('getTreeJSON', (req, cb) => {
+    Check.ifTokenValid(req)
+        .then(user=>{
+            Object.assign(req, {user:user});
+            return Ctrl.getTreeJSON(req);
+        })
+        .then(response => cb(null, response))
+        .catch(err=> cb(err, null))
+});
+
+//    //.post(upload.array('file'), check.ifTokenValid, check.project, check.validateStorage, editorCtrl.isUnitTest, editorCtrl.uploadFiles);
+editoresponder.on('uploadFiles', (req, cb) => {
+    Check.ifTokenValid(req)
+        .then(user=>{
+            Object.assign(req, {user:user});
+            return Check.project(req);
+        })
+        .then(project=>{
+            Object.assign(req, {project:project});
+            return Check.validateStorage(req)
+        })
+        .then(validated => Ctrl.isUnitTest(req))
+        .then(testResult=>{
+            if(!_.isBoolean(testResult)){
+                Object.assign(req, {files:testResult})
+            }
+            return Ctrl.uploadFiles(req);
         })
         .then(response => cb(null, response))
         .catch(err=> cb(err, null))

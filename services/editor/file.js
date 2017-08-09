@@ -98,7 +98,7 @@ function copy(req, srcPath, filePath) {
  */
 function rename(req, filePath) {
   return new Promise((resolve, reject) => {
-    let newName = help.cleanFileName(req.body.newName);
+    let newName = utils.cleanFileName(req.body.newName);
     let newPath = filePath.split(/[\\\/]+/g);
     if (!_.last(newPath)) return reject({error: 'Cannot rename project folder!', code: httpStatus.BAD_REQUEST});
     if (!fs.existsSync(filePath)) return reject({

@@ -161,6 +161,29 @@ function removeOculus(req) {
     })
 }
 
+function download(req){
+    return new Promise((resolve, reject)=>{
+        const device = req.params.device;
+        request.get({
+                url: `${config[device].urls.get}/${req.project.build[device].buildId}`,
+                headers: {
+                    'app-id': config[device].appId,
+                    'app-secret': config[device].appSecret,
+                },
+            },
+            (err, httpResponse, body) => {
+                if (err || httpResponse.statusCode !== 200) {
+                    return reject(Response.onError(err ||  httpResponse.statusCode, `Internal Server Error`, 500))
+                }
+
+                return resolve({
+                    downloadUrl: `${config[device].urls.download}/${JSON.parse(body).data.downloadUrl}`,
+                })
+            }
+        );
+    })
+}
+
 module.exports = {
     buildVive: buildVive,
     removeVive: removeVive,
@@ -169,5 +192,6 @@ module.exports = {
     buildIos:buildIos,
     removeIos:removeIos,
     buildOculus:buildOculus,
-    removeOculus:removeOculus
+    removeOculus:removeOculus,
+    download:download
 };

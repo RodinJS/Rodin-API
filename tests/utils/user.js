@@ -69,7 +69,7 @@ function getTestProjects(done) {
         .get('/api/project')
         .set(generateHeaders())
         .then(res => {
-            common.project = res.body.data[0];
+            common.project = res.body.data.projects[0];
             done();
         });
 }
@@ -90,9 +90,6 @@ function setProject(project) {
     common.project = project;
 }
 
-function getProject() {
-    return common.project;
-}
 
 function getToken() {
     return common.token;

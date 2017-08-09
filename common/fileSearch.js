@@ -1,0 +1,110 @@
+/**
+ * Created by xgharibyan on 8/7/17.
+ */
+
+
+/**
+ * Created by xgharibyan on 11/1/16.
+ */
+
+const fs = require('fs');
+const LineByLineReader = require ('line-by-line');
+const utils = require('./utils');
+
+class fileContentSearch {
+
+    constructor(rootPath, searchWord, caseSensetive, isRegex, loopLimit, projectName) {
+        caseSensetive = caseSensetive && caseSensetive.toLowerCase() === 'true' ? true : false;
+        this.searchWord = searchWord;
+        this.rootFolder = rootPath;
+        this.limit = loopLimit || 100000;
+        this.readedLinesLength = 0;
+        this.regexParams = caseSensetive ? 'i' : 'g';
+        this.isRegex = isRegex || false;
+        this.projectName = projectName;
+        this.foundedFiles = {};
+    }
+
+    search(cb) {
+        let _this = this;
+        this.walk(this.rootFolder, function (err, files) {
+            if (err) {
+                cb(err, null);
+            }
+
+            cb(false, _this.foundedFiles);
+        });
+    }
+
+    walk(dir, done) {
+        var results = [], _this = this;
+        fs.readdir(dir, (err, list)=> {
+            if (err) return done(err);
+            var i = 0;
+            (function next() {
+                var file = list[i++];
+                if (!file) return done(null, results);
+
+                let lastCharacter = dir.slice(-1) == '/' ? '' : '/';
+
+                file = dir + lastCharacter + file;
+                fs.stat(file, (err, stat) => {
+                    if (stat && stat.isDirectory()) {
+                        _this.walk(file, (err, res)=> {
+                            results = results.concat(res);
+                            next();
+                        });
+                    } else {
+                        if (_this.readedLinesLength >= _this.limit) next();
+                        else {
+                            if (utils.byteToMb(stat.size) < 10) {
+                                _this.searchInsideFile(file, (data)=> {
+                                    results.push(file);
+                                    next();
+                                });
+                            }
+                        }
+                    }
+                });
+            })();
+        });
+    }
+
+    searchInsideFile(file, cb) {
+
+        let lineNr = 0;
+        let lineReader = new LineByLineReader(file);
+
+        lineReader
+            .on('error',  (err)=> {
+                cb(false);
+            })
+            .on('line',  (line)=> {
+                let searchWord = this.searchWord.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
+                let re = new RegExp(searchWord, this.regexParams);
+
+                let match = re.exec(line);
+                if (match) {
+                    let relativePath = file.substr(file.indexOf(this.projectName));
+
+                    if (!this.foundedFiles[relativePath])
+                        this.foundedFiles[relativePath] = [];
+
+                    this.foundedFiles[relativePath].push({
+                        fileName: relativePath,
+                        line: lineNr,
+                        column: match.index,
+                        text: match.input.replace(/^\s\s*/, '').replace(/\s\s*$/, ''),
+                    });
+                }
+
+                this.readedLinesLength++;
+            })
+            .on('end',  () => {
+                cb(true);
+            });
+    }
+
+}
+
+module.exports =fileContentSearch;

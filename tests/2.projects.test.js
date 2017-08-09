@@ -75,7 +75,7 @@ describe('## Projects APIs', () => {
             });
     });
 
-    it('should insert teamplates inside DB', (done) => {
+    it('should insert templates inside DB', (done) => {
         request(app)
             .get('/api/project/templates/importOnce')
             .set(User.generateHeaders())
@@ -88,7 +88,7 @@ describe('## Projects APIs', () => {
 
     });
 
-    it('should get teamplates list', (done) => {
+    it('should get templates list', (done) => {
         request(app)
             .get('/api/project/templates/list')
             .set(User.generateHeaders())
