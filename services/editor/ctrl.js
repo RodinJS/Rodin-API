@@ -311,7 +311,7 @@ function uploadFiles(req) {
             }
             return File.upload(req, folderPath)
                 .then(uploaded => _fileOnSuccess(req))
-                .then(updated => resolve(`Files successfuly uploaded!`))
+                .then(updated => resolve(`Files successfully uploaded!`))
                 .catch(err => reject(Response.onError(err, err.error, err.code)))
         });
     })

@@ -85,6 +85,7 @@ gulp.task('start:microservices',  (cb) => {
     microServices.payments = exec('node ./services/payments/index.js');
     microServices.editor = exec('node ./services/editor/index.js');
     microServices.pages = exec('node ./services/pages/index.js');
+    microServices.modules = exec('node ./services/modules/index.js');
     cb();
 });
 
@@ -171,7 +172,7 @@ gulp.task('singletest', ['set-env'], () => {
 // clean dist, compile js files, copy non-js files and execute tests
 gulp.task('mocha', ['clean'], () => {
     runSequence(
-        ['copy', 'babel'],
+        ['copy'],
         'test'
     );
 });

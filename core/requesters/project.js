@@ -113,6 +113,11 @@ function makePublic(req, res, next){
     return _submit(req, res, params);
 }
 
+function generateDeveloperKey(req, res, next){
+    const params = {type:'generateDeveloperKey'};
+    return _submit(req, res, params);
+}
+
 function _onSuccess(res, data, code){
     //console.log('data', data);
     //console.log('!!--- CODE --- !!', code);
@@ -141,5 +146,6 @@ module.exports = {
     importOnce:importOnce,
     getTemplatesList:getTemplatesList,
     transpile:transpile,
-    makePublic:makePublic
+    makePublic:makePublic,
+    generateDeveloperKey:generateDeveloperKey
 };

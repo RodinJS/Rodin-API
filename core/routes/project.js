@@ -112,6 +112,9 @@ router.route('/:id/download/:device')
 router.route('/pp/:id')
     .post(projectRequester.makePublic);
 
+router.route('/developerKey/:id')
+    .post(projectRequester.generateDeveloperKey);
+
 
 
 

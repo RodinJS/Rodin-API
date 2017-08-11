@@ -553,6 +553,21 @@ function makePublic(req) {
    })
 }
 
+function generateDeveloperKey(req){
+    return new Promise((resolve, reject)=>{
+        req.body.developerKey = jwt.sign({
+            projectId: req.params.id,
+            role: req.user.username,
+            random: utils.generateCode(10)
+        }, config.jwtSecret, {
+            expiresIn: "5d"
+        });
+        Project.findOneAndUpdate({_id: req.params.id, owner: req.user.username}, {$set: req.body}, {new: true})
+            .then(project => resolve({developerKey: req.body.developerKey}))
+            .catch((e) => reject(Response.onError(e, `Can't update info`, 400)));
+    })
+}
+
 module.exports = {
     create: create,
     list: list,
@@ -570,5 +585,6 @@ module.exports = {
     importOnce: importOnce,
     getTemplatesList: getTemplatesList,
     transpile: transpile,
-    makePublic:makePublic
+    makePublic:makePublic,
+    generateDeveloperKey:generateDeveloperKey
 };

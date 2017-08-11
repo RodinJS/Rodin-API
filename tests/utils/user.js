@@ -8,6 +8,9 @@ const app = require('../../core/index');
 const UserModel = require('../../models/user');
 const ProjectModel = require('../../models/project');
 const ProjectTemplate = require('../../models/projectTemplate');
+const ModuelesModel = require('../../models/modules')
+const ModulesSubscribed = require('../../models/modulesSubscribe')
+const ModulesAssigned = require('../../models/assignedModules')
 const _ = require('lodash');
 const async = require('async');
 const mongoose = require('mongoose');
@@ -103,10 +106,11 @@ function getUserName() {
     return common.username;
 }
 
-function createGod() {
+function createGod(done) {
     const GOD = new UserModel(god);
     GOD.save()
         .then(response => {
+            done();
         })
         .catch(err => {
         });

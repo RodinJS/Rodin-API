@@ -276,3 +276,16 @@ projectsResponder.on('transpile', (req, cb)=>{
             return cb(err, null);
         })
 });
+
+projectsResponder.on('generateDeveloperKey', (req, cb)=>{
+    Check.ifTokenValid(req)
+        .then(user=>{
+            Object.assign(req, {user:user});
+            return Ctrl.generateDeveloperKey(req);
+        })
+        .then(response=> cb(null, response))
+        .catch(err=> {
+            console.log('project rollback err', err);
+            return cb(err, null);
+        })
+});

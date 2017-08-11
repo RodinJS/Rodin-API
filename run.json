@@ -64,7 +64,14 @@
       "name": "pagesService",
       "script": "services/pages/index.js",
       "watch": "services/pages/**/*.js"
+    },
+    {
+      "name": "modulesService",
+      "script": "services/modules/index.js",
+      "watch": "services/modules/**/*.js"
     }
+
+
 
 
   ]

@@ -6,11 +6,18 @@ const expect = chai.expect;
 const app = require('../core/index');
 const UserUtils = require('./utils/user');
 UserUtils.dropCollections();
-UserUtils.createGod();
+//UserUtils.createGod();
 
 chai.config.includeStack = true;
 
 describe('## User APIs', () => {
+
+    before(function (done) {
+        UserUtils.createGod(() => {
+            done();
+        });
+    });
+
     let info = {
         token: '',
         user: {

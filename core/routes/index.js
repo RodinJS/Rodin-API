@@ -15,6 +15,7 @@ const paymentsRoutes = require('./payments');
 const editorRoutes = require('./editor');
 const supportRoutes = require('./support');
 const pagesRoutes = require('./pages');
+const modulesRoute = require('./modules');
 
 const router = express.Router();
 
@@ -54,7 +55,11 @@ const apiRoutes = {
     pagesRoutes:{
         route:'/pages',
         module:[pagesRoutes]
-    }
+    },
+    modules: {
+        route: '/modules',
+        module: [RodinSanitizer.makeSanitize, modulesRoute],
+    },
 };
 
 _.each(apiRoutes, (route, key) => {

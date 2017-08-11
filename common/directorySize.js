@@ -37,6 +37,7 @@ function sum(array) {
 function getUserStorageSize(user) {
     return new Promise((resolve, reject) => {
         const rootDir = `projects/${user.username}`;
+        if(user.role == 'God') return resolve(0);
         readSizeRecursive(rootDir, (err, size) => {
             if (err) return reject(err);
             return resolve(size);

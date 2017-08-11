@@ -198,8 +198,9 @@ describe('## Editor APIs', () => {
                 .post('/api/editor/upload?id=' + User.getProject()._id + '')
                 .set(User.generateHeaders())
                 .send(requestMocks.UPLOAD_FILES)
-                .expect(httpStatus.OK)
+                //.expect(httpStatus.OK)
                 .then(res => {
+                    console.log('res UPLOAD', res.body);
                     expect(res.body.success).to.equal(true);
                     expect(res.body.data).to.equal('Files successfully uploaded!');
                     done();

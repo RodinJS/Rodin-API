@@ -72,6 +72,18 @@ function validateToken(req) {
     });
 }
 
+function isGod(req) {
+   return new Promise((resolve, reject)=>{
+       const token = req.headers['x-access-token']; //TODO: Get from Auth header
+       // verifies secret and checks exp date
+       jwt.verify(token, config.jwtSecret, function (err, decoded) {
+           if (err) return reject(`You are not authenticated!`);
+           if(decoded.role === 'God') return resolve(true);
+           return reject('You are not authorized to perform this operation!');
+       });
+   })
+}
+
 function project(req) {
     return new Promise((resolve, reject) => {
         const projectID = req.query.id || req.params.id;
@@ -132,5 +144,6 @@ module.exports = {
     validateToken: validateToken,
     project: project,
     isProjectOwn: isProjectOwn,
-    validateStorage:validateStorage
+    validateStorage:validateStorage,
+    isGod:isGod
 };
