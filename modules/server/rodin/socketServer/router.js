@@ -2,10 +2,10 @@
  * Created by xgharibyan on 1/13/17.
  */
 
-import express from 'express';
-import handler from './handler';
-import apiSockets from './apiSocket';
-const router = express.Router();	// eslint-disable-line new-cap
+const express = require('express');
+const handler = require('./handler');
+const apiSockets =  require('./apiSocket');
+const router = express.Router();
 
 
 router.route('/')
@@ -14,6 +14,6 @@ router.route('/')
 router.route('/subscribe')
     .post(apiSockets.subscribe);
 
-export default router;
+module.exports = router;
 
 

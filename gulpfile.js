@@ -20,7 +20,6 @@ const paths = {
     tests: './tests/*.js',
     singleTestFile: ['' + testPath + '1.user.test.js', `${testPath}2.projects.test.js`, `${testPath}7.modules.test.js`, '' + testPath + '99.removeUser.test.js'],
 };
-const pm2 = require('pm2');
 const microServices = {auth: null, user: null};
 
 

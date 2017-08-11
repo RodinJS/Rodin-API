@@ -1,12 +1,12 @@
 /**
  * Created by xgharibyan on 1/12/17.
  */
-import APIError from '../../../../server/helpers/APIError';
-import httpStatus from '../../../../server/helpers/httpStatus';
-import fs from 'fs';
-import _ from 'lodash';
-import config from '../../../../config/env';
-import request from 'request-promise';
+const APIError = require('../../../../common/APIError');
+const httpStatus = require('../../../../common/httpStatus');
+const fs = require('fs');
+const _ = require('lodash');
+const config = require('../../../../config/env');
+const request = require('request-promise');
 const HookSecretKey = 'K7rd6FzEZwzcc6dQr3cv9kz4tTTZzAc9hdXYJpukvEnxmbdB42V4b6HePs5ZDTYLW_4000dram_module';
 const APIURL = config.API;
 
@@ -57,4 +57,4 @@ function serverFile(req, res) {
     res.setHeader('content-type', 'text/javascript');
     return res.send(content)
 }
-export default {validate, serverFile}
+module.exports = {validate, serverFile};

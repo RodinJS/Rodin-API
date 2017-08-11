@@ -3,9 +3,9 @@
  */
 
 
-import sio from 'socket.io';
-import _ from 'lodash';
-import moment from 'moment';
+const sio = require('socket.io');
+const _ = require('lodash');
+const moment = require('moment');
 
 const Service = {
     namespaces:{}
@@ -159,4 +159,4 @@ function subscribe(req, res){
     return res.status(200).json({success:true, data:{ns:req.body.projectId}});
 }
 
-export default {run, Service, subscribe};
+module.export = {run, Service, subscribe};
