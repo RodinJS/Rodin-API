@@ -36,7 +36,7 @@ const Pages = new mongoose.Schema({
 Pages.statics = {
 
     get(pageURL) {
-        return this.findOne({ slug: pageURL, $or: [{ state: 'published' }, { state: 'draft' }] }).execAsync()
+        return this.findOne({slug: pageURL, $or: [{state: 'published'}, {state: 'draft'}]}).execAsync()
             .then((page) => {
                 if (page) {
                     return page;
@@ -53,16 +53,18 @@ Pages.statics = {
     },
 
     getPagesList() {
-        return this.find().select({ title: 1, slug: 1, state: 1, putOnFooter: 1, externalURL:1 })
-            .then((pages) => {
+        return this.aggregate([
+            {$match: {state: 'published'}},
+            {$group: {_id: "$category", values: {$push: "$$ROOT"}}},
+        ])
+            .then(pages => {
                 if (!pages) {
                     const err = new APIError('Error while requesting pages list!----', httpStatus.NOT_FOUND, true);
                     return Promise.reject(err);
                 }
                 return pages;
-
             })
-            .catch((e)=> {
+            .catch((e) => {
                 const err = new APIError('Error while requesting pages list!----', httpStatus.NOT_FOUND, true);
                 return Promise.reject(err);
             });

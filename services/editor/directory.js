@@ -4,9 +4,10 @@
 const fs = require('fs');
 const fsExtra = require('fs-extra');
 const Promise = require('bluebird');
-const httpStatus = require('../../common/httpStatus') ;
+const httpStatus = require('../../common/httpStatus');
 const utils = require('../../common/utils');
-const _  = require('lodash');
+const config = require('../../config/env');
+const _ = require('lodash');
 const extract = require('extract-zip');
 
 /**
@@ -14,15 +15,15 @@ const extract = require('extract-zip');
  * @param filePath
  */
 function isDirectory(filePath) {
-  try {
-    return fs.statSync(filePath).isDirectory();
-  } catch (e) {
-    if (e.code === 'ENOENT') {
-      return false;
-    } else {
-      throw e;
+    try {
+        return fs.statSync(filePath).isDirectory();
+    } catch (e) {
+        if (e.code === 'ENOENT') {
+            return false;
+        } else {
+            throw e;
+        }
     }
-  }
 }
 /**
  *
@@ -30,24 +31,24 @@ function isDirectory(filePath) {
  * @param filePath
  */
 function create(req, filePath) {
-  return new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
 
-    if (fs.existsSync(filePath) && !isDirectory(filePath)) {
-      return reject({
-        error: `
+        if (fs.existsSync(filePath) && !isDirectory(filePath)) {
+            return reject({
+                error: `
       There is already a file with the same name as the folder name you specified.Specify a different name.
       `, code: httpStatus.FILE_ALREDY_EXIST
-      });
-    }
+            });
+        }
 
-    if (fs.existsSync(filePath)) {
-      return reject({error: `Folder already exists!`, code: httpStatus.FILE_ALREDY_EXIST})
-    }
-    fsExtra.ensureDir(filePath, (err) => {
-      if (err) reject({error: `Can't create folder!`, code: httpStatus.COULD_NOT_CREATE_FILE});
-      resolve(true);
-    })
-  });
+        if (fs.existsSync(filePath)) {
+            return reject({error: `Folder already exists!`, code: httpStatus.FILE_ALREDY_EXIST})
+        }
+        fsExtra.ensureDir(filePath, (err) => {
+            if (err) reject({error: `Can't create folder!`, code: httpStatus.COULD_NOT_CREATE_FILE});
+            resolve(true);
+        })
+    });
 }
 
 /**
@@ -58,21 +59,27 @@ function create(req, filePath) {
  * @param rootPath
  */
 function copy(req, srcPath, filePath, rootPath) {
-  return new Promise((resolve, reject) => {
-    const source = srcPath.split('/');
-    const dest = filePath.split('/');
-    if (!fs.existsSync(srcPath)) return reject({error: 'Folder does not exist!', code: httpStatus.PATH_DOES_NOT_EXIST});
-    if (fs.existsSync(filePath)) return reject({error: 'Folder already exists!', code: httpStatus.FILE_ALREDY_EXIST});
-    if (fs.existsSync(`${rootPath}/tmp`)) utils.deleteFolderRecursive(`${rootPath}/tmp`);
-    fsExtra.copy(srcPath, `${rootPath}/tmp/${_.last(dest)}`, (err) => {
-      if (err) return reject({error: 'Folder copy error!', code: httpStatus.BAD_REQUEST});
-      fsExtra.move(`${rootPath}/tmp/${_.last(dest)}`, filePath, (moveErr) => {
-        if (moveErr) return reject({error: 'Folder copy error!', code: httpStatus.BAD_REQUEST});
-        utils.deleteFolderRecursive(`${rootPath}/tmp`);
-        resolve(true);
-      })
+    return new Promise((resolve, reject) => {
+        const source = srcPath.split('/');
+        const dest = filePath.split('/');
+        if (!fs.existsSync(srcPath)) return reject({
+            error: 'Folder does not exist!',
+            code: httpStatus.PATH_DOES_NOT_EXIST
+        });
+        if (fs.existsSync(filePath)) return reject({
+            error: 'Folder already exists!',
+            code: httpStatus.FILE_ALREDY_EXIST
+        });
+        if (fs.existsSync(`${rootPath}/tmp`)) utils.deleteFolderRecursive(`${rootPath}/tmp`);
+        fsExtra.copy(srcPath, `${rootPath}/tmp/${_.last(dest)}`, (err) => {
+            if (err) return reject({error: 'Folder copy error!', code: httpStatus.BAD_REQUEST});
+            fsExtra.move(`${rootPath}/tmp/${_.last(dest)}`, filePath, (moveErr) => {
+                if (moveErr) return reject({error: 'Folder copy error!', code: httpStatus.BAD_REQUEST});
+                utils.deleteFolderRecursive(`${rootPath}/tmp`);
+                resolve(true);
+            })
+        });
     });
-  });
 }
 /**
  *
@@ -87,11 +94,14 @@ function copy(req, srcPath, filePath, rootPath) {
  * @param filePath
  */
 function remove(req, filePath) {
-  return new Promise((resolve, reject) => {
-    if (!fs.existsSync(filePath)) return reject({error: 'Path does not exist!', code: httpStatus.PATH_DOES_NOT_EXIST});
-    utils.deleteFolderRecursive(filePath);
-    return resolve(true);
-  });
+    return new Promise((resolve, reject) => {
+        if (!fs.existsSync(filePath)) return reject({
+            error: 'Path does not exist!',
+            code: httpStatus.PATH_DOES_NOT_EXIST
+        });
+        utils.deleteFolderRecursive(filePath);
+        return resolve(true);
+    });
 }
 /**
  *
@@ -100,7 +110,7 @@ function remove(req, filePath) {
  * @returns {*}
  */
 function upload(req, folderPath) {
-  return _processUpload(req, folderPath);
+    return _processUpload(req, folderPath);
 }
 
 /**
@@ -111,39 +121,45 @@ function upload(req, folderPath) {
  */
 function _processUpload(req, folderPath) {
 
-  return new Promise((resolve, reject) => {
-    const PromisifiedFS = Promise.promisifyAll(fs);
-    const promises = req.files.map((file) => {
-      const filePath = `${folderPath}/${file.originalname}`;
-      const writeFile = PromisifiedFS.writeFileAsync(filePath, new Buffer(file.buffer));
-      if (fs.existsSync(filePath))
-        return PromisifiedFS.chmodAsync(filePath, 0o755);
-      else
-        return writeFile;
-    });
-    const zipFile = folderPath + '/' + req.files[0].originalname;
+    return new Promise((resolve, reject) => {
 
-    Promise.all(promises).then(() => {
+        //if env is local puth absolute path
+        if(!config.stuff_path) folderPath = `${__dirname}/../../${folderPath}`;
 
-      extract(zipFile, {dir: folderPath}, (err) => {
-        if (err) return reject({error: 'Folder Upload error', code: httpStatus.BAD_REQUEST});
+        console.log('folderPath', folderPath);
 
-        if (!fs.existsSync(zipFile)) return reject({error: 'Upload error-', code: httpStatus.BAD_REQUEST});
-
-        fs.unlink(zipFile, (err) => {
-          if (err) return reject({error: 'Upload error--', code: httpStatus.BAD_REQUEST});
-          fs.readdirSync(folderPath).forEach((file, index) => {
-            var curPath = folderPath + '/' + file;
-            fs.chmodSync(curPath, 0o755);
-          });
-          resolve(true);
+        const PromisifiedFS = Promise.promisifyAll(fs);
+        const promises = req.files.map((file) => {
+            const filePath = `${folderPath}/${file.originalname}`;
+            const writeFile = PromisifiedFS.writeFileAsync(filePath, new Buffer(file.buffer));
+            if (fs.existsSync(filePath))
+                return PromisifiedFS.chmodAsync(filePath, 0o755);
+            else
+                return writeFile;
         });
+        const zipFile = folderPath + '/' + req.files[0].originalname;
 
-      });
-    }).catch((error) => reject({error: 'Upload error---', code: httpStatus.BAD_REQUEST}));
-  });
+        Promise.all(promises).then(() => {
+
+            extract(zipFile, {dir: folderPath}, (err) => {
+                if (err) return reject(err);
+
+                if (!fs.existsSync(zipFile)) return reject({error: 'Upload error-', code: httpStatus.BAD_REQUEST});
+
+                fs.unlink(zipFile, (err) => {
+                    if (err) return reject(err);
+                    fs.readdirSync(folderPath).forEach((file, index) => {
+                        var curPath = folderPath + '/' + file;
+                        fs.chmodSync(curPath, 0o755);
+                    });
+                    resolve(true);
+                });
+
+            });
+        }).catch((error) => reject(error));
+    });
 
 }
 
 
-module.exports= {create, copy, upload, remove};
+module.exports = {create, copy, upload, remove};

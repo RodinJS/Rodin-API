@@ -5,6 +5,7 @@
 const cote = require('cote');
 const Promise = require('bluebird');
 const mongoose =  require('mongoose');
+const _ = require('lodash');
 const Ctrl = require('./ctrl');
 const config = require('../../config/env');
 const Check = require('../../common/check');
@@ -113,7 +114,6 @@ editoresponder.on('getTreeJSON', (req, cb) => {
         .catch(err=> cb(err, null))
 });
 
-//    //.post(upload.array('file'), check.ifTokenValid, check.project, check.validateStorage, editorCtrl.isUnitTest, editorCtrl.uploadFiles);
 editoresponder.on('uploadFiles', (req, cb) => {
     Check.ifTokenValid(req)
         .then(user=>{
@@ -132,5 +132,8 @@ editoresponder.on('uploadFiles', (req, cb) => {
             return Ctrl.uploadFiles(req);
         })
         .then(response => cb(null, response))
-        .catch(err=> cb(err, null))
+        .catch(err=> {
+            console.log('err', err);
+            cb(err, null)
+        })
 });

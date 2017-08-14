@@ -12,6 +12,7 @@ const User = require('../../models/user');
 const Response = require('../../common/servicesResponses');
 const Project = require('../../models/project');
 const notifications = require('../../common/notifications');
+const Notifications = require('../../models/notifications');
 const httpStatus = require('../../common/httpStatus');
 const RDSendgrid = require('../../common/sendgrid');
 const sg = sendgrid('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');
@@ -124,7 +125,46 @@ function build(req) {
     });
 }
 
+function get(req) {
+
+    return new Promise((resolve, reject) => {
+        Notifications.list({}, req.user.username)
+            .then(notifications => resolve(notifications))
+            .catch(err => reject(Response.onError(err, `Something went wrong`, 400)));
+
+    });
+}
+
+function update(req) {
+    return new Promise((resolve, reject) => {
+        Notifications.updateAsync({_id: req.body.id || req.query.id}, {$set: {isRead: true}})
+            .then(() => resolve({}))
+            .catch(err => reject(Response.onError(err, `Something went wrong`, 400)));
+
+    })
+}
+
+function remove(req){
+    return new Promise((resolve, reject)=>{
+        const queryParam = req.query.all ? { username: req.user.username } : { _id: req.query.id };
+        const successMessage = req.query.all ? 'All notifications deleted' : 'Notification deleted';
+        Notifications.removeAsync(queryParam)
+            .then((deletedNotifications)=> {
+                if (deletedNotifications.result.ok === 1) {
+                    return resolve(successMessage)
+                } else {
+                    return reject(Response.onError(err, `Something went wrong`, 400))
+                }
+
+            })
+            .catch(err => reject(Response.onError(err, `Something went wrong`, 400)));
+    })
+}
+
 module.exports = {
     build:build,
-    validateKey:validateKey
+    validateKey:validateKey,
+    get:get,
+    update:update,
+    remove:remove,
 };

@@ -7,6 +7,7 @@ const fsExtra = require('fs-extra');
 const dirToJson = require('dir-to-json');
 const _ = require('lodash');
 const Minizip = require('node-minizip');
+const path = require('path');
 const config = require('../../config/env');
 const utils = require('../../common/utils');
 const User = require('../../models/user');
@@ -242,7 +243,7 @@ function uploadFiles(req) {
 
         const type = req.body.type;
         const action = req.body.action;
-        const folderPath = utils.generateFilePath(req, req.body.path);
+        let folderPath = utils.generateFilePath(req, req.body.path);
 
         if (!fs.existsSync(folderPath)) {
             fsExtra.ensureDirSync(folderPath);
@@ -375,13 +376,10 @@ function getTreeJSON(req) {
 
                 //TODO normalize root folder path
                 let response = {
-                    success: true,
-                    data: {
-                        name: project.name,
-                        description: project.description,
-                        root: project.root,
-                        tree: '',
-                    },
+                    name: project.name,
+                    description: project.description,
+                    root: project.root,
+                    tree: '',
                 };
 
                 const rootPath = `${config.stuff_path}projects/${req.user.username}/${project.root}`;
@@ -390,7 +388,7 @@ function getTreeJSON(req) {
 
                     return dirToJson(rootPath)
                         .then((dirTree) => {
-                            response.data.tree = dirTree;
+                            response.tree = dirTree;
                             return resolve(response)
                         })
                         .catch((e) => reject(Response.onError(e, `Problem with generating tree`, 404)));
@@ -398,20 +396,23 @@ function getTreeJSON(req) {
                 }
                 if (_.isArray(req.query.folderPath)) {
 
-                    response.data.tree = [];
+                    response.tree = [];
                     _.each(req.query.folderPath, (folderPath, key) => {
-                        response.data.tree.push(_dirTree(`${rootPath}/${folderPath}`, true, rootPath));
+                        response.tree.push(_dirTree(`${rootPath}/${folderPath}`, true, rootPath));
                     });
 
                 }
                 else {
                     const folderPath = req.query.folderPath ? `/${req.query.folderPath}` : '';
                     let isSetFolderPath = !!folderPath;
-                    response.data.tree = _dirTree((isSetFolderPath ? `${rootPath}${folderPath}` : rootPath), isSetFolderPath, rootPath);
+                    response.tree = _dirTree((isSetFolderPath ? `${rootPath}${folderPath}` : rootPath), isSetFolderPath, rootPath);
                 }
                 return resolve(response);
             })
-            .catch(err => reject(Response.onError(err, `Project not found`, 404)))
+            .catch(err => {
+                console.log('err', err);
+                reject(Response.onError(err, `Project not found`, 404))
+            })
     })
 }
 

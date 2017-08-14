@@ -11,6 +11,7 @@ const expressValidation = require('express-validation');
 const APIError = require('../common/APIError');
 const httpStatus = require('../common/httpStatus');
 const apiRoutes = require('./routes');
+const config = require('../config/env');
 
 const app = express();
 const server = require('http').Server(app);
@@ -55,6 +56,7 @@ app.use((err, req, res, next) => {
 });
 
 
-server.listen(7000);
+console.log('SERVER PORT', config.port);
+server.listen(config.port);
 
 module.exports = app;

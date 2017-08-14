@@ -40,3 +40,43 @@ hooksResponder.on('build', (req, cb) => {
             return cb(err, null);
         })
 });
+
+hooksResponder.on('get', (req, cb) => {
+    Check.ifTokenValid(req)
+        .then(user=> {
+            Object.assign(req, {user:user});
+            return Ctrl.get(req);
+        })
+        .then(notification=> cb(null, notification))
+        .catch(err=> {
+            console.log('build  hook  err', err);
+            return cb(err, null);
+        })
+});
+
+hooksResponder.on('update', (req, cb) => {
+    Check.ifTokenValid(req)
+        .then(user=> {
+            Object.assign(req, {user:user});
+            return Ctrl.update(req);
+        })
+        .then(notification=> cb(null, notification))
+        .catch(err=> {
+            console.log('build  hook  err', err);
+            return cb(err, null);
+        })
+});
+
+hooksResponder.on('remove', (req, cb) => {
+    Check.ifTokenValid(req)
+        .then(user=> {
+            Object.assign(req, {user:user});
+            return Ctrl.remove(req);
+        })
+        .then(notification=> cb(null, notification))
+        .catch(err=> {
+            console.log('build  hook  err', err);
+            return cb(err, null);
+        })
+});
+

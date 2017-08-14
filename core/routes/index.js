@@ -17,6 +17,7 @@ const supportRoutes = require('./support');
 const pagesRoutes = require('./pages');
 const modulesRoute = require('./modules');
 const socketServerRoute = require('./socketServer');
+const notificationsRoute = require('./notifications');
 
 const router = express.Router();
 
@@ -60,6 +61,10 @@ const apiRoutes = {
     modules: {
         route: '/modules',
         module: [RodinSanitizer.makeSanitize, modulesRoute],
+    },
+    notifications: {
+        route: '/notifications',
+        module: [RodinSanitizer.makeSanitize, notificationsRoute],
     },
     socketServer:{
         route:'/socket-server',

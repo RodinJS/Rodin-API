@@ -33,6 +33,21 @@ function build(req, res, next){
     return _submit(req, res, params);
 }
 
+function get(req, res, next){
+    const params = { type:'get'};
+    return _submit(req, res, params);
+}
+
+function update(req, res, next){
+    const params = { type:'update'};
+    return _submit(req, res, params);
+}
+
+function remove(req, res, next){
+    const params = { type:'remove'};
+    return _submit(req, res, params);
+}
+
 function _onSuccess(res, data, code){
     //console.log('data', data);
     //console.log('!!--- CODE --- !!', code);
@@ -45,5 +60,8 @@ function _onError(res, err){
 }
 
 module.exports = {
-    build:build,
+    build,
+    get,
+    update,
+    remove
 };
