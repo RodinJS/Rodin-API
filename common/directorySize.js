@@ -3,6 +3,8 @@
  */
 
 const fs = require('fs');
+const config = require('../config/env');
+
 
 function readSizeRecursive(dir, done) {
     let results = [];
@@ -36,7 +38,7 @@ function sum(array) {
 
 function getUserStorageSize(user) {
     return new Promise((resolve, reject) => {
-        const rootDir = `projects/${user.username}`;
+        const rootDir = `${config.stuff_path}projects/${user.username}`;
         if(user.role == 'God') return resolve(0);
         readSizeRecursive(rootDir, (err, size) => {
             if (err) return reject(err);
