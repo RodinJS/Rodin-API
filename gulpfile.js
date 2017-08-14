@@ -15,7 +15,7 @@ const exec = require('child_process').exec;
 const plugins = gulpLoadPlugins();
 const testPath = './server/tests/';
 const paths = {
-    js: ['./**/*.js', '!services/**', '!models/**' , '!common/**', '!dist/**', '!tests/**', '!projects/**', '!publish/**', '!public/**', '!node_modules/**', '!coverage/**', '!history/**', '!resources/**'],
+    js: ['./**/*.js', '!services/**', '!modules/**', '!models/**' , '!common/**', '!dist/**', '!tests/**', '!projects/**', '!publish/**', '!public/**', '!node_modules/**', '!coverage/**', '!history/**', '!resources/**'],
     nonJs: ['./package.json', './.gitignore'],
     tests: './tests/*.js',
     singleTestFile: ['' + testPath + '1.user.test.js', `${testPath}2.projects.test.js`, `${testPath}7.modules.test.js`, '' + testPath + '99.removeUser.test.js'],
