@@ -44,17 +44,15 @@ function validate(req, res, next) {
 
 }
 
-function serverFile(req, res) {
-    let content = '';
-    if (!req.module) {
-        content = `var error = '${req.error}';\n throw new Error(error);`;
-    }
-    else{
-        const socketIO = fs.readFileSync(`${__dirname}/../../../node_modules/socket.io-client/dist/socket.io.js`, 'utf8');
-        const clinetJS = fs.readFileSync(`${__dirname}/client.js`, 'utf8');
-        content = socketIO+clinetJS;
-    }
-    res.setHeader('content-type', 'text/javascript');
-    return res.send(content)
+function serverFile(req) {
+   return new Promise((resolve, reject)=>{
+       if (!req.module) {
+           return resolve(`var error = '${req.error}';\n throw new Error(error);`);
+       }
+       const socketIO = fs.readFileSync(`${__dirname}/../../../../node_modules/socket.io-client/dist/socket.io.js`, 'utf8');
+       const clinetJS = fs.readFileSync(`${__dirname}/client.js`, 'utf8');
+       return resolve(socketIO+clinetJS);
+   })
 }
+
 module.exports = {validate, serverFile};

@@ -149,14 +149,16 @@ function run(server) {
     Service.io = sio(server);
 }
 
-function subscribe(req, res){
-    if(_.isUndefined(req.body.projectId) || _.isEmpty(req.body.projectId)){
-        return res.status(400).json({success:false, data:'Provide namespace'});
-    }
-    if(!Service.namespaces[req.body.projectId]){
-        Service.namespaces[req.body.projectId] = new RodinNS(Service.io, req.body.projectId);
-    }
-    return res.status(200).json({success:true, data:{ns:req.body.projectId}});
+function subscribe(req){
+   return new Promise((resolve, reject)=>{
+       if(_.isUndefined(req.body.projectId) || _.isEmpty(req.body.projectId)){
+           return reject('Provide namespace');
+       }
+       if(!Service.namespaces[req.body.projectId]){
+           Service.namespaces[req.body.projectId] = new RodinNS(Service.io, req.body.projectId);
+       }
+       return resolve({ns:req.body.projectId});
+   })
 }
 
-module.export = {run, Service, subscribe};
+module.exports = {run, Service, subscribe};

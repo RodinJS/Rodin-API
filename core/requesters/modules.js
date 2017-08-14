@@ -15,7 +15,10 @@ function _requesterHandler(params){
     return new Promise((resolve, reject) =>{
         ModulesRequester.send(params, (err, response, code)=>{
             if(err) return reject(err);
-            return resolve([response, code]);
+            const arr = [];
+            arr.push(response);
+            arr.push(code);
+            return resolve(arr);
         })
     })
 }
@@ -23,7 +26,7 @@ function _requesterHandler(params){
 function _submit(req, res, params){
     Object.assign(params, _.pick(req, 'headers', 'body', 'query', 'params', 'files'));
     return _requesterHandler(params)
-        .then((response, code)=> _onSuccess(res, response[0], response[1]))
+        .then((response)=> _onSuccess(res, response[0], response[1]))
         .catch(err=> _onError(res, err));
 }
 
@@ -77,9 +80,23 @@ function assignToProject(req, res, next){
     return _submit(req, res, params);
 }
 
+function socketServerFile(req, res, next){
+    const params = { type:'socketServerFile'};
+    return _submit(req, res, params);
+}
+
+function socketServerSubscribe(req, res, next){
+    const params = { type:'socketServerSubscribe'};
+    return _submit(req, res, params);
+}
+
 function _onSuccess(res, data, code){
     //console.log('data', data);
     //console.log('!!--- CODE --- !!', code);
+    if(code == 202){
+        res.setHeader('content-type', 'text/javascript');
+        return res.send(data)
+    }
     return res.status(code || 200).json({success:true, data:data});
 }
 
@@ -98,5 +115,7 @@ module.exports = {
     update,
     subscribe,
     unsubscribe,
-    assignToProject
+    assignToProject,
+    socketServerFile,
+    socketServerSubscribe
 };

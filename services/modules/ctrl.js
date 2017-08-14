@@ -9,6 +9,7 @@ const busterSyntax = require('buster-syntax');
 const fsExtra = require('fs-extra');
 const CP = require('google-closure-compiler');
 const fs = require('fs');
+const URL = require('url');
 const RDSendgrid = require('../../common/sendgrid');
 const APIError = require('../../common/APIError');
 const httpStatus = require('../../common/httpStatus');
@@ -220,12 +221,17 @@ function auth(req) {
                 else if (_.indexOf(allowedHosts, req.headers.host) < 0) {
                     if (!req.headers.referer) return null;
                     const refererPath = URL.parse(req.headers.referer).path.split('/');
-                    const projectRoot = _.indexOf(refererPath[refererPath.length - 1], '.index.html') > -1 ? refererPath[refererPath.length - 1] : refererPath[refererPath.length - 2];
+                    const projectRoot = refererPath.length == 1 ?
+                                        refererPath[0] :
+                                        _.indexOf(refererPath[refererPath.length - 1], '.index.html') > -1 ?
+                                        refererPath[refererPath.length - 1] :
+                                        refererPath[refererPath.length - 2];
                     Object.assign(innerQuery, {root: projectRoot});
                 }
                 else {
                     Object.assign(innerQuery, {domain: req.headers.host});
                 }
+                console.log('innerQuery', innerQuery);
                 return Project.get(innerQuery)
             })
             .then(project => {

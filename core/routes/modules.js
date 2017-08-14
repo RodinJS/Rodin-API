@@ -43,4 +43,8 @@ router.route('/status/:statusParam')
     .post(modulesRequester.approveReject);
 
 
+router.route('/socket-server')
+    .get(modulesRequester.socketServerFile);
+
+
 module.exports = router;

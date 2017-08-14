@@ -8,10 +8,8 @@ module.exports = {
     socketPort: 4000,
     socketURL: 'http://localhost:4000',
     modules: {
-        ROOT: 'http://localhost:4000',
         socketService: {
-            URL: 'http://localhost:4000',
-            port: 4000,
+            port: 5000,
         },
     },
     social: {

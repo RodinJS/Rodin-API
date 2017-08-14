@@ -194,9 +194,14 @@ function list(req) {
         Project.list({limit, skip}, req.user.username, req.query._queryString)
             .then((response) => {
                 projects = response;
-                return Project.projectsCount(req.user.username, false, false, false);
+                if(req.query.count){
+                    return Project.projectsCount(req.user.username, false, false, false);
+                }
+                return null;
             })
-            .then(count => resolve({projects: projects, count: count}))
+            .then(count => {
+                resolve(count ? {projects: projects, count: count} : projects)
+            })
             .catch((e) => reject(Response.onError(e, `Can't get project`, 400)));
 
     })

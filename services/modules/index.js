@@ -5,9 +5,15 @@
 const cote = require('cote');
 const Promise = require('bluebird');
 const mongoose =  require('mongoose');
+const server = require('http').createServer();
 const Ctrl = require('./ctrl');
 const config = require('../../config/env');
 const Check = require('../../common/check');
+const apiSocket = require('../../modules/server/rodin/socketServer/apiSocket');
+const apiSocketHandler = require('../../modules/server/rodin/socketServer/handler');
+server.listen(config.modules.socketService.port);
+console.log('apiSocket', apiSocket);
+apiSocket.run(server);
 
 // promisify mongoose
 Promise.promisifyAll(mongoose);
@@ -170,4 +176,26 @@ ModulesResponder.on('unsubscribe', (req, cb)=>{
             console.log('Modules get  err', err);
             return cb(err, null);
         })
+});
+
+ModulesResponder.on('socketServerFile', (req, cb)=>{
+    Ctrl.auth(req)
+        .then(module => {
+            Object.assign(req, {module:module});
+            return apiSocketHandler.serverFile(req);
+        })
+        .then(response=> cb(null, response, 202))
+        .catch(err=> {
+            console.log('Modules get  err', err);
+            return cb(err, null);
+        });
+});
+
+ModulesResponder.on('socketServerSubscribe', (req, cb)=>{
+    apiSocketHandler.subscribe(req)
+        .then(response=> cb(null, response))
+        .catch(err=> {
+            console.log('Modules get  err', err);
+            return cb(err, null);
+        });
 });

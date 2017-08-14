@@ -70,7 +70,7 @@ describe('## Projects APIs', () => {
             .expect(httpStatus.OK)
             .then(res => {
                 expect(res.body.success).to.equal(true);
-                expect(res.body.data.projects).to.be.an('array');
+                expect(res.body.data).to.be.an('array');
                 done();
             });
     });
