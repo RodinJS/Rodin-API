@@ -17,6 +17,7 @@ const Response = require('../../common/servicesResponses');
 const Project = require('../../models/project');
 const ProjectTemplates = require('../../models/projectTemplate');
 const RDSendgrid = require('../../common/sendgrid');
+const transpiler = require('./transpiler')
 const sg = sendgrid('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');
 
 
@@ -518,7 +519,7 @@ function getTemplatesList(req) {
 
 function transpile(req) {
     return new Promise((resolve, reject) => {
-        // transpiler.projectTranspile(req);
+        transpiler.projectTranspile(req);
         return resolve(`${req.project.name} build start`);
     })
 }

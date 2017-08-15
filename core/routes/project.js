@@ -90,6 +90,9 @@ router.route('/templates/importOnce')
 router.route('/templates/list')
     .get(projectRequester.getTemplatesList);
 
+router.route('/:id/build/transpile')
+    .get(projectRequester.transpile);
+
 router.route('/:id/build/vive')
     .post(upload, buildRequester.buildVive)
     .delete(upload, buildRequester.removeVive);
