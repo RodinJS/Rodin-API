@@ -1,0 +1,3 @@
+api-core:
+  build: .
+  command: sh -c 'npm run test'
