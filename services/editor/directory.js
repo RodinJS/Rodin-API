@@ -123,10 +123,8 @@ function _processUpload(req, folderPath) {
 
     return new Promise((resolve, reject) => {
 
-        //if env is local puth absolute path
+        //if env is local put absolute path
         if(!config.stuff_path) folderPath = `${__dirname}/../../${folderPath}`;
-
-        console.log('folderPath', folderPath);
 
         const PromisifiedFS = Promise.promisifyAll(fs);
         const promises = req.files.map((file) => {
