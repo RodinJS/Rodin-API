@@ -6,6 +6,6 @@ ADD . /var/www/api
 WORKDIR /var/www/api
 RUN npm install
 
-EXPOSE 7000
+EXPOSE 3000
 
 CMD ["sh", "-c", "export NODE_ENV=testing"]
