@@ -13,6 +13,6 @@ COPY --from=0 /tmp /var/www/api
 WORKDIR /var/www/api
 ADD . /var/www/api
 
-EXPOSE 7000
+EXPOSE 3000
 
 CMD ["sh", "-c", "export NODE_ENV=testing"]
