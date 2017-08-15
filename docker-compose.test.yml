@@ -1,3 +1,3 @@
-api-core:
+sut:
   build: .
   command: sh -c 'npm run test'
