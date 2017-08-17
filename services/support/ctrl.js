@@ -6,6 +6,7 @@ const Promise = require('bluebird');
 const APIError = require('../../common/APIError');
 const httpStatus = require('../../common/httpStatus');
 const Response = require('../../common/servicesResponses');
+const HelpScoutVote = require('../../models/helpScoutVote');
 const Q = require('q');
 const helpscout = require('helpscout');
 const request = require('request');
@@ -63,17 +64,17 @@ const mappers = {
 
     singleConversation(conversation, getThreads = true){
         let pickerParams = _.clone(this.pickerParams);
-        conversation.threads = _.map(conversation.threads, (thread, key)=>{
-            thread.createdBy = _.pick(thread.createdBy, ['firstName', 'lastName', 'email','photoUrl']);
+        conversation.threads = _.map(conversation.threads, (thread, key) => {
+            thread.createdBy = _.pick(thread.createdBy, ['firstName', 'lastName', 'email', 'photoUrl']);
             thread = _.pick(thread, ['body', 'createdBy', 'createdAt']);
             return thread;
         });
         conversation.preview = _.last(conversation.threads).body;
 
-        if(!getThreads){
-            pickerParams = _.remove(pickerParams, (param)=> param !== 'threads');
+        if (!getThreads) {
+            pickerParams = _.remove(pickerParams, (param) => param !== 'threads');
         }
-        else{
+        else {
             conversation.threads.pop();
         }
         conversation.rating = conversation.customFields[0] ? parseInt(conversation.customFields[0].value) : 0;
@@ -182,8 +183,8 @@ function _initSearchParams(req) {
         method: 'GET',
         qs: {
             query: `mailboxid:${mailboxId}`,
-            pageSize:req.query.limit || 10,
-            page:req.query.page || 1
+            pageSize: req.query.limit || 10,
+            page: req.query.page || 1
         }
     };
     if (req.query.subject) data.qs.query += ` AND subject:"${req.query.subject}"`;
@@ -201,7 +202,7 @@ function _initCustomerParams(method, req) {
         method: method,
 
         body: {
-            "firstName":req.user.username,
+            "firstName": req.user.username,
             "emails": [{
                 "value": req.user.email
             }]
@@ -234,8 +235,64 @@ function _submit(options) {
 }
 
 
-function getQuestionsList(req){
-    return new Promise((resolve, reject)=>{
+function _initVoting(req, response, mailbox) {
+
+    return new Promise((resolve) => {
+        const allowingVotes = [0, 1, -1, 2, -2];
+        if (!req.body.vote) return resolve(false);
+        if (_.indexOf(allowingVotes, parseInt(req.body.vote)) < 0) return resolve(false);
+        HelpScoutVote.get(req.user.username, req.params.id)
+            .then(vote => {
+
+                let voted = parseInt(req.body.vote);
+
+                if (!vote) {
+                    const Vote = new HelpScoutVote({
+                        username: req.user.username,
+                        conversationId: req.params.id,
+                        vote: voted
+                    });
+                    return Vote.save()
+                        .then(saved => resolve(handleVote(voted)))
+                        .catch(err => {
+                            console.log('err', err);
+                            return resolve(false)
+                        })
+                }
+                if (vote.vote == voted) return resolve(false);
+                vote.vote = voted;
+                vote.save()
+                    .then(saved => resolve(handleVote(voted)))
+                    .catch(err => {
+                        console.log('err', err);
+                        return resolve(false)
+                    })
+
+            })
+            .catch(err => {
+                console.log('err', err);
+                return resolve(false)
+            });
+    });
+
+
+    function handleVote(voted) {
+        const voteField = response.item.customFields || [];
+        if (voteField.length > 0 && voteField[0].fieldId === mailbox.voteId) {
+            voteField[0].value = parseInt(voteField[0].value || 0) + voted;
+        }
+        else {
+            voteField.push({
+                fieldId: mailbox.voteId,
+                value: voted,
+            })
+        }
+        return voteField;
+    }
+}
+
+function getQuestionsList(req) {
+    return new Promise((resolve, reject) => {
         let param = '';
         switch (req.params.type) {
             case 'issues':
@@ -253,12 +310,12 @@ function getQuestionsList(req){
         return _submit(options)
             .then(response => mappers.conversation(response))
             .then(response => resolve(response))
-            .catch(err=>reject(Response.onError(err, `Bad request`, 400)))
+            .catch(err => reject(Response.onError(err, `Bad request`, 400)))
     })
 }
 
 function validateCustomer(req) {
-    return new Promise((resolve, reject)=>{
+    return new Promise((resolve, reject) => {
         const customerQuery = _initCustomerSearchParams(req);
         const returnData = function (response) {
             return resolve(response.items[0]);
@@ -273,13 +330,13 @@ function validateCustomer(req) {
                     .then(response => _submit(customerQuery))
                     .then(response => returnData(response))
             })
-            .catch(err=>reject(Response.onError(err, `Bad request`, 400)))
+            .catch(err => reject(Response.onError(err, `Bad request`, 400)))
 
     })
 }
 
 function createQuestion(req) {
-   return new Promise((resolve, reject)=>{
+    return new Promise((resolve, reject) => {
         let param = '';
         switch (req.params.type) {
             case 'issues':
@@ -295,38 +352,38 @@ function createQuestion(req) {
         }
         const conversationParams = _initConversationParams('POST', req, param);
         _submit(conversationParams)
-            .then(response => resolve(`Conversation Create`))
-            .catch(err=>reject(Response.onError(err, `Bad request`, 400)))
+            .then(response => resolve(`Conversation Created`))
+            .catch(err => reject(Response.onError(err, `Bad request`, 400)))
     })
 }
 
 function createQuestionThread(req) {
-   return new Promise((resolve, reject)=>{
-       const threadParams = _initThreadParams('POST', req);
-       _submit(threadParams)
-           .then(response =>resolve(`thread Create`))
-           .catch(err=>reject(Response.onError(err, `Bad request`, 400)))
-   })
+    return new Promise((resolve, reject) => {
+        const threadParams = _initThreadParams('POST', req);
+        _submit(threadParams)
+            .then(response => resolve(`thread Create`))
+            .catch(err => reject(Response.onError(err, `Bad request`, 400)))
+    })
 }
 
 function getConversation(req) {
-   return new Promise((resolve, reject)=>{
-       if (_.isUndefined(req.params.id)) reject(Response.onError(null, `Provide conversation id`, 400));
+    return new Promise((resolve, reject) => {
+        if (_.isUndefined(req.params.id)) reject(Response.onError(null, `Provide conversation id`, 400));
 
-       const options = {
-           url: `https://api.helpscout.net/v1/conversations/${req.params.id}.json`,
-           method: 'GET',
-       };
-       Object.assign(options, defaultParams);
-       return _submit(options)
-           .then(response => resolve(mappers.singleConversation(response.item)))
-           .catch(err=>reject(Response.onError(err, `Bad request`, 400)))
-   })
+        const options = {
+            url: `https://api.helpscout.net/v1/conversations/${req.params.id}.json`,
+            method: 'GET',
+        };
+        Object.assign(options, defaultParams);
+        return _submit(options)
+            .then(response => resolve(mappers.singleConversation(response.item)))
+            .catch(err => reject(Response.onError(err, `Bad request`, 400)))
+    })
 }
 
-function updateConversation(req){
-    return new Promise((resolve, reject)=>{
-        if (_.isUndefined(req.params.id)) reject(Response.onError(null, `Provide conversation id`, 400));
+function updateConversation(req) {
+    return new Promise((resolve, reject) => {
+        if (_.isUndefined(req.params.id)) return reject(Response.onError(null, `Provide conversation id`, 400));
         let mailbox = '';
         switch (req.params.type) {
             case 'issues':
@@ -362,54 +419,47 @@ function updateConversation(req){
                     tags: req.body.tags ? _.uniq(_.concat(req.body.tags, response.item.tags)) : response.item.tags,
                     reload: true
                 });
-                if (req.body.vote) {
-                    const voteField = response.item.customFields || [];
-                    if (voteField.length > 0 && voteField[0].fieldId === mailbox.voteId) {
-                        voteField[0].value = parseInt(voteField[0].value) + parseInt(req.body.vote > 0 ? 1 : -1);
-                    }
-                    else {
-                        voteField.push({
-                            fieldId: mailbox.voteId,
-                            value: parseInt(req.body.vote > 0 ? 1 : 0),
-                        })
-                    }
-                    Object.assign(options.body, {customFields: voteField})
-                }
+                return _initVoting(req, response, mailbox);
+            })
+            .then(voteField => {
+                console.log('voteField', voteField);
+                if (voteField)
+                    Object.assign(options.body, {customFields: voteField});
                 return _submit(options)
             })
             .then(response => resolve(response.item))
-            .catch(err=>reject(Response.onError(err, `Bad request`, 400)))
+            .catch(err => reject(Response.onError(err, `Bad request`, 400)))
     })
 }
 
 function getTags(req) {
-   return new Promise((resolve, reject)=>{
-       let param = '';
-       switch (req.params.type) {
-           case 'issues':
-               param = mailboxes['issues'].id;
-               break;
-           case 'features':
-               param = mailboxes['features'].id;
-               break;
-           default:
-               param = mailboxes['Q&A'].id;
-       }
-       const options = _initConversationListParams(param);
-       Object.assign(options, defaultParams);
-       return _submit(options)
-           .then(response => resolve(_grabTags(response.items)))
-           .catch(err=>reject(Response.onError(err, `Bad request`, 400)))
-   })
+    return new Promise((resolve, reject) => {
+        let param = '';
+        switch (req.params.type) {
+            case 'issues':
+                param = mailboxes['issues'].id;
+                break;
+            case 'features':
+                param = mailboxes['features'].id;
+                break;
+            default:
+                param = mailboxes['Q&A'].id;
+        }
+        const options = _initConversationListParams(param);
+        Object.assign(options, defaultParams);
+        return _submit(options)
+            .then(response => resolve(_grabTags(response.items)))
+            .catch(err => reject(Response.onError(err, `Bad request`, 400)))
+    })
 }
 
-function searchConversations(req){
-    return new Promise((resolve, reject)=>{
+function searchConversations(req) {
+    return new Promise((resolve, reject) => {
         const options = _initSearchParams(req);
         return _submit(options)
             .then(response => mappers.conversation(response))
-            .then(response=>resolve(response))
-            .catch(err=>reject(Response.onError(err, `Bad request`, 400)))
+            .then(response => resolve(response))
+            .catch(err => reject(Response.onError(err, `Bad request`, 400)))
     })
 }
 
