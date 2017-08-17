@@ -201,8 +201,7 @@ function _initCustomerParams(method, req) {
         method: method,
 
         body: {
-            "firstName": req.user.profile ? req.user.profile.firstName : req.user.username,
-            "lastName": req.user.profile ? req.user.profile.lastName : req.user.username,
+            "firstName":req.user.username,
             "emails": [{
                 "value": req.user.email
             }]
@@ -233,8 +232,6 @@ function _submit(options) {
         });
     })
 }
-
-
 
 
 function getQuestionsList(req){
@@ -384,7 +381,6 @@ function updateConversation(req){
             .catch(err=>reject(Response.onError(err, `Bad request`, 400)))
     })
 }
-
 
 function getTags(req) {
    return new Promise((resolve, reject)=>{
