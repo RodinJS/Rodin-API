@@ -1,19 +1,18 @@
 {
-  "name": "rodin-js-api2",
-  "version": "0.0.1",
-  "description": "Rodin platform",
+  "name": "rodin-api",
+  "version": "2.0.1",
+  "description": "Rodin API v2",
   "main": "index.js",
   "private": true,
   "engines": {
-    "node": "4.4.x",
-    "npm": "3.9.x"
+    "node": "6.11.x",
+    "npm": "3.10.x"
   },
   "scripts": {
-    "start": "gulp serve",
+    "start": "node_modules/.bin/gulp serve",
     "start:server": "cd ./dist; node socketServer",
-    "build": "gulp",
-    "lint": "gulp lint",
-    "test": "gulp mocha",
+    "build": "node_modules/.bin/gulp",
+    "test": "node_modules/.bin/gulp mocha",
     "commit": "git-cz",
     "report-coverage": "coveralls < ./coverage/lcov.info"
   },
@@ -22,11 +21,8 @@
     "url": "git+https://github.com/grigorkh/Rodin-JS-API.git"
   },
   "keywords": [
-    "Rodin.js",
-    "rodin.space",
-    "rodin.design",
-    "nodejs",
-    "rodin",
+    "Rodin VR",
+    "rodin.io",
     "VR",
     "AR"
   ],
