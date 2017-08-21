@@ -277,7 +277,7 @@ function getMyModules(req) {
             })
             .then(modules => {
                 const assignedModules = _.map(modules.map(m => m.toObject()), (module) => {
-                    let assigned = _.filter(assignedModules, (m) => m.toObject().moduleId.toString() === module._id.toString());
+                    let assigned = _.filter(modules, (m) => m.toObject().moduleId.toString() === module._id.toString());
                     if (assigned.length > 0) {
                         module.projects = _.map(assigned, (assign) => {
                             req.module = module;
@@ -290,8 +290,10 @@ function getMyModules(req) {
                         });
                     }
                     let moduleInfo = _.find(validModules, (subscribedModule) => subscribedModule.moduleId.toString() === module._id.toString());
-                    module.unsubscribed = moduleInfo.unsubscribed;
-                    module.expiredAt = moduleInfo.expiredAt;
+                    if(moduleInfo){
+                        module.unsubscribed = moduleInfo.unsubscribed;
+                        module.expiredAt = moduleInfo.expiredAt;
+                    }
                     return module;
                 });
                 return resolve(assignedModules);

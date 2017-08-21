@@ -94,12 +94,11 @@ modules.statics = {
             },
             ];
         }
-
         query.$and = [
           {status:{$eq:status}}
         ];
 
-        return this.find()
+        return this.find(query)
           .sort({ createdAt: -1 })
           .skip(skip)
           .limit(limit)
