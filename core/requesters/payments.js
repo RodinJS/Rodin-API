@@ -4,6 +4,7 @@
 
 const cote = require('cote');
 const _  = require('lodash');
+const responses = require('../../common/servicesResponses');
 
 const PaymentsRequester = new cote.Requester({
     name: 'payments requester',
@@ -76,7 +77,7 @@ function _onSuccess(res, data, code){
 
 function _onError(res, err){
     console.error('Core response', err);
-    return res.status(err.code || 400).json({success:false, data:err.message || `Bad request`});
+    return responses.sendError(res, 'paymentsService', err);
 }
 
 module.exports = {

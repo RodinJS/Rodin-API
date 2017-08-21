@@ -148,7 +148,9 @@ function create(req) {
                     owner: req.user.username,
                     displayName: req.body.displayName,
                     description: req.body.description,
-                    isNew: true
+                    isNew: true,
+                    defaultThumbnail: req.body.defaultThumbnail
+
                 });
 
                 if (req.body.githubUrl) {
@@ -313,7 +315,7 @@ function rollBack(req) {
 
 
         const publishFolder = utils.generateFilePath(req, '', 'publish');
-        const historyFolder = help.generateFilePath(req, '', 'history');
+        const historyFolder = utils.generateFilePath(req, '', 'history');
         const projectBackupFolder = `${historyFolder}/${req.body.date}`;
 
         if (!fs.existsSync(projectBackupFolder))

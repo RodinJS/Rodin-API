@@ -95,7 +95,7 @@ function _updateUserFromSocial(req, user) {
 
                 if (req.body.sync) {
                     updatedUser = updatedUser.toObject();
-                    updatedUser = _.omit(updatedUser, ['password', 'stripe']);
+                    updatedUser = _.omit(updatedUser, ['stripe']);
 
 
                     updatedUser.github = updatedUser.github ? updatedUser.github.email : false;
@@ -196,6 +196,7 @@ function socialAuth(req) {
 
         return User.findOne(queryMethod)
             .then(user => {
+                console.log('user', user);
                 if (!user) {
                     Object.assign(userObject, {
                         email: req.body.email,
@@ -232,10 +233,7 @@ function socialAuth(req) {
                 }
                 return resolve(data.user);
             })
-            .catch(err => {
-                console.log('err', err);
-                return reject(Response.onError(err, `Bad request`, 400))
-            })
+            .catch(err => reject(Response.onError(err, `Bad request`, 400)))
     });
 
 

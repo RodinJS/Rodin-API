@@ -110,7 +110,7 @@ gitResponder.on('syncProjects', (req, cb) => {
             console.log('err', err);
             cb(err, null)
         })
-})
+});
 
 gitResponder.on('syncSingleProjects', (req, cb) => {
     Check.ifTokenValid(req)
@@ -123,6 +123,6 @@ gitResponder.on('syncSingleProjects', (req, cb) => {
             console.log('err', err);
             cb(err, null)
         })
-})
+});
 
 //buildResponder.on('*', console.log);

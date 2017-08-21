@@ -29,10 +29,10 @@ module.exports = {
             callbackURL: 'http://localhost:3000/api/auth/steam/callback',
         },
         github: {
-            clientId: '1600631d3a04c8eff4e7',
-            clientSecret: '7334447b351bbbad91a5701e4b02b8ab47458789',
-            /*  clientId: '2350afe57c144672285b',
-             clientSecret: '3b16cafe190ecdc3a659198dc32b396b95dff77a',*/
+            /*  clientId: '1600631d3a04c8eff4e7',
+             clientSecret: '7334447b351bbbad91a5701e4b02b8ab47458789',*/
+            clientId: '2350afe57c144672285b',
+            clientSecret: '3b16cafe190ecdc3a659198dc32b396b95dff77a',
         },
     },
     urlshortenerkey: 'AIzaSyCe5zVHHHhhv40N-WzeffxWva377dPQnH8',

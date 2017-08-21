@@ -3,6 +3,8 @@
  */
 
 const cote = require('cote');
+const _ = require('lodash');
+const responses = require('../../common/servicesResponses');
 
 const AuthRequester = new cote.Requester({
     name: 'authorization requester',
@@ -42,8 +44,7 @@ function _onSuccess(res, data){
 }
 
 function _onError(res, data){
-    console.error('service response error', data.err);
-    res.status(data.code || 400).json({success:false, data:data.message || `Bad request`});
+    return responses.sendError(res, 'authService', data);
 }
 
 module.exports = {

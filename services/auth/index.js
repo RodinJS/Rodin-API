@@ -60,5 +60,8 @@ authResponder.on('login', (req, cb) => {
 authResponder.on('socialAuth', (req, cb)=>{
     Ctrl.socialAuth(req)
         .then(user=> cb(null, Ctrl.completeLogin({user:user})))
-        .catch(err => cb(err, null))
+        .catch(err => {
+            console.log('social auth err', err);
+            cb(err, null)
+        })
 });

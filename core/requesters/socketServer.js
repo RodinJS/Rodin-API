@@ -4,6 +4,8 @@
 
 const cote = require('cote');
 const _  = require('lodash');
+const responses = require('../../common/servicesResponses');
+
 
 const socketServerRequester = new cote.Requester({
     name: 'socketServer requester',
@@ -40,8 +42,8 @@ function _onSuccess(res, data, code){
 }
 
 function _onError(res, err){
-    console.error('Socket Server response', err);
-    if(res) return res.status(err.code || 400).json({success:false, data:err.message || `Bad request`});
+    return responses.sendError(res, 'socketService', err);
+
 }
 
 module.exports = {

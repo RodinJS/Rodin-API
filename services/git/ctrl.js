@@ -160,7 +160,6 @@ function _updateProject(username, project){
 
 function getToken(req) {
     return new Promise((resolve, reject) => {
-        console.log('QUERY', req.query);
         const options = {
             uri: APIURLS.AUTH,
             qs: {
@@ -173,7 +172,6 @@ function getToken(req) {
             },
             json: true,
         };
-
         request(options)
             .then((tokenInfo) => {
                 console.log(`github-access-token is, ${tokenInfo.access_token}`);
@@ -274,7 +272,7 @@ function create(req) {
              .then(response => git(projectRoot).checkoutLocalBranch('rodin_editor'))
              .then(response => git(projectRoot).push('origin', 'rodin_editor', {'-u': true}))*/
             .then(response => resolve(`GitHub repo successfully created`))
-            .catch(err => reject(Response.onError(err, `Can't create repo`, 400)));
+            .catch(err => reject(Response.onError(err, `GitHub account not linked to this user!`, 350)));
     })
 }
 
