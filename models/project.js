@@ -136,6 +136,9 @@ const ProjectSchema = new mongoose.Schema({
         type: String,
         default: "pending"
     },
+    defaultThumbnail:{
+        type:String,
+    },
     developerKey: {
         "type": String
     }
