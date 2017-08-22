@@ -59,6 +59,11 @@ function getKnowlegeArticle(req, res, next){
     return _submit(req, res, params);
 }
 
+function menuList(req, res, next){
+    const params = { type:'menuList'};
+    return _submit(req, res, params);
+}
+
 function _onSuccess(res, data, code){
     //console.log('data', data);
     //console.log('!!--- CODE --- !!', code);
@@ -76,5 +81,6 @@ module.exports = {
     getFaq,
     getKnowledgeCategories,
     getKnowlegeCategoryArticles,
-    getKnowlegeArticle
+    getKnowlegeArticle,
+    menuList
 };
