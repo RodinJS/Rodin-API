@@ -36,8 +36,6 @@ function hook(req, res, next){
 }
 
 function _onSuccess(res, data, code){
-    //console.log('data', data);
-    //console.log('!!--- CODE --- !!', code);
     if(res) return res.status(code || 200).json({success:true, data:data});
 }
 
