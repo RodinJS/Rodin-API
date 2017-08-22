@@ -57,7 +57,7 @@ function _sendEmail(req) {
         const appName = (req.body.project && req.body.project.appName) ? req.body.project.appName : req.project.name;
         let notificationSTATUS = 200;
 
-        if (req.body.error) {
+        if (req.body.buildStatus == false && req.body.error) {
             const errorMessage = httpStatus[`${req.body.error.message}`] ? httpStatus[`${req.body.error.message}`].messgae : `build failed`;
             notificationSTATUS = 500;
             //req.mailSettings.from = 'noreplay@rodin.io';
@@ -72,8 +72,6 @@ function _sendEmail(req) {
             req.notification = `${appName} ${req.params.device} build complete`;
         }
 
-
-        console.log('req.notification', req.notification);
 
         RDSendgrid.send(req)
             .then(mailSent => {
