@@ -33,32 +33,9 @@ function _sendEmail(req) {
     return new Promise((resolve, reject) => {
 
 
-      /*  req.mailSettings = {
-            to: req.user.email,
-            from: 'team@rodin.io',
-            fromName: 'Rodin team',
-            templateName: 'rodin_build',
-            subject: `${req.project.displayName} ${req.params.device} build complete`,
-            handleBars: [{
-                name: 'dateTime',
-                content: utils.convertDate(),
-            }, {
-                name: 'userName',
-                content: req.user.username,
-            },
-                {
-                    name: 'projectName',
-                    content: req.project.name,
-                },
-                {
-                    name: 'device',
-                    content: req.params.device,
-                }],
-        };*/
-
         req.mailSettings = {
             to: req.user.email,
-            from: 'team@rodin.io',
+            from: 'noreplay@rodin.io',
             fromName: 'Rodin team',
             handleBars: [{
                 name: 'dateTime',
@@ -77,18 +54,17 @@ function _sendEmail(req) {
                 }],
         };
 
-
         const appName = (req.body.project && req.body.project.appName) ? req.body.project.appName : req.project.name;
         let notificationSTATUS = 200;
 
-        if (req.body.buildStatus === false && req.body.error) {
+        if (req.body.error) {
             const errorMessage = httpStatus[`${req.body.error.message}`] ? httpStatus[`${req.body.error.message}`].messgae : `build failed`;
             notificationSTATUS = 500;
-            req.mailSettings.from = 'noreplay@rodin.io';
+            //req.mailSettings.from = 'noreplay@rodin.io';
             req.mailSettings.templateName = 'rodin_build_failed';
             req.mailSettings.subject = `${req.project.displayName} ${req.params.device} build failed`;
             req.mailSettings.handleBars.push({name:'buildId', content:req.body.buildId});
-            req.notification = Response.onError(null, `${appName} ${req.params.device} ${errorMessage}`, notificationSTATUS);
+            req.notification = Response.onError(true, `${appName} ${req.params.device} ${errorMessage}`, notificationSTATUS);
         }
         else {
             req.mailSettings.templateName = 'rodin_build';
@@ -97,11 +73,13 @@ function _sendEmail(req) {
         }
 
 
+        console.log('req.notification', req.notification);
+
         RDSendgrid.send(req)
             .then(mailSent => {
                 req.notification = {
                     username: req.user.username,
-                    label: req.notification.error ? req.notification.error.message : req.notification.data,
+                    label: req.notification.error ? req.notification.error.message : req.notification,
                     project: _.pick(req.project, ['_id', 'name']),
                     error: req.notification.error || false,
                     event: 'projectBuild',
