@@ -30,7 +30,16 @@ const SupportResponder = new cote.Responder({
 
 
 SupportResponder.on('getQuestionsList', (req, cb) => {
-    Ctrl.getQuestionsList(req)
+
+    Check.getUserByToken(req)
+        .then(user=>{
+            if(user) Object.assign(req, {user:user});
+            return  Ctrl.getUserVotedConversations(req)
+        })
+        .then(votedConversations=>{
+            Object.assign(req, {votedConversations:votedConversations});
+            return Ctrl.getQuestionsList(req)
+        })
         .then(response=> cb(null, response))
         .catch(err=> {
             console.log('getQuestionsList  err', err);
@@ -73,7 +82,15 @@ SupportResponder.on('createQuestionThread', (req, cb) => {
 });
 
 SupportResponder.on('getConversation', (req, cb) => {
-    Ctrl.getConversation(req)
+    Check.getUserByToken(req)
+        .then(user=>{
+            if(user) Object.assign(req, {user:user});
+            return  Ctrl.getUserVotedConversations(req)
+        })
+        .then(votedConversations=>{
+            Object.assign(req, {votedConversations:votedConversations});
+            return Ctrl.getConversation(req)
+        })
         .then(response=> cb(null, response))
         .catch(err=> {
             console.log('getConversation  err', err);
@@ -104,7 +121,15 @@ SupportResponder.on('getTags', (req, cb) => {
 });
 
 SupportResponder.on('searchConversations', (req, cb) => {
-    Ctrl.searchConversations(req)
+    Check.getUserByToken(req)
+        .then(user=>{
+            if(user) Object.assign(req, {user:user});
+            return  Ctrl.getUserVotedConversations(req)
+        })
+        .then(votedConversations=>{
+            Object.assign(req, {votedConversations:votedConversations});
+            return Ctrl.searchConversations(req)
+        })
         .then(response=> cb(null, response))
         .catch(err=> {
             console.log('getConversation  err', err);

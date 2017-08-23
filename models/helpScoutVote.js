@@ -35,6 +35,15 @@ HelpScoutSchema.statics = {
                 return Promise.reject(err);
             });
     },
+    list(username){
+        return this.find({username:username}).select({vote:1, conversationId:1, _id:0})
+            .execAsync().then((votes) => votes)
+            .catch((e) => {
+                console.log(e);
+                const err = new APIError('No such vote exists!', httpStatus.NOT_FOUND, true);
+                return Promise.reject(err);
+            });
+    }
 };
 
 module.exports = mongoose.model('helpscoutvote', HelpScoutSchema);

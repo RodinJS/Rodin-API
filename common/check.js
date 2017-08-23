@@ -11,6 +11,39 @@ const Project = require('../models/project');
 const userCapacity  = require('./directorySize');
 const utils = require('./utils');
 
+
+function _getUser(decoded){
+    return new Promise((resolve, reject)=>{
+        User.get(decoded.username)
+            .then(user => {
+                if (!user) return reject('Invalid token!');
+                user = user.toObject();
+                const data = {};
+                Object.assign(data, _.pick(user, ['email',
+                    'username',
+                    'role',
+                    'profile',
+                    'storageSize',
+                    'allowProjectsCount',
+                    'usernameConfirmed',
+                    'stripe',
+                    'projects',
+                ]));
+                Object.assign(data, {
+                    creationDate: user.createdAt,
+                    github: user.github ? user.github.email : false,
+                    githubToken:user.github ? user.github.token : undefined,
+                    facebook: user.facebook ? user.facebook.email : false,
+                    google: user.google ? user.google.email : false,
+                    steam: !!user.steamId,
+                    oculus: !!user.oculusId
+                });
+                return resolve(data);
+            })
+            .catch(err => reject('Invalid token!'));
+    })
+}
+
 function ifTokenValid(req) {
 
     return new Promise((resolve, reject) => {
@@ -18,36 +51,9 @@ function ifTokenValid(req) {
         const token = req.headers['x-access-token'];
         jwt.verify(token, config.jwtSecret, (err, decoded) => {
             if (err) return reject(`Invalid token or secret`);
-            User.get(decoded.username)
-                .then(user => {
-                    if (!user) return reject('Invalid token!');
-                    user = user.toObject();
-                    const data = {};
-                    Object.assign(data, _.pick(user, ['email',
-                        'username',
-                        'role',
-                        'profile',
-                        'storageSize',
-                        'allowProjectsCount',
-                        'usernameConfirmed',
-                        'stripe',
-                        'projects',
-                    ]));
-                    Object.assign(data, {
-                        creationDate: user.createdAt,
-                        github: user.github ? user.github.email : false,
-                        githubToken:user.github ? user.github.token : undefined,
-                        facebook: user.facebook ? user.facebook.email : false,
-                        google: user.google ? user.google.email : false,
-                        steam: !!user.steamId,
-                        oculus: !!user.oculusId
-                    });
-                    return resolve(data);
-                })
-                .catch(err => {
-                    console.log('err', err);
-                    return reject('Invalid token!');
-                });
+            _getUser(decoded)
+                .then(resolve)
+                .catch(reject)
         });
 
     });
@@ -138,6 +144,19 @@ function validateStorage(req) {
     })
 }
 
+function getUserByToken(req) {
+    return new Promise((resolve)=>{
+        if (!req.headers['x-access-token']) return resolve(null);
+        const token = req.headers['x-access-token'];
+        jwt.verify(token, config.jwtSecret, (err, decoded) => {
+            if (err) return resolve(null);
+            _getUser(decoded)
+                .then(resolve)
+                .catch(err=> resolve(null))
+        });
+    })
+}
+
 module.exports = {
     ifTokenValid: ifTokenValid,
     ifSelfUpdate: ifSelfUpdate,
@@ -145,5 +164,6 @@ module.exports = {
     project: project,
     isProjectOwn: isProjectOwn,
     validateStorage:validateStorage,
-    isGod:isGod
+    isGod:isGod,
+    getUserByToken
 };

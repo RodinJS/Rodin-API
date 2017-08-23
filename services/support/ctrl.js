@@ -43,7 +43,7 @@ const defaultParams = {
 const mappers = {
     pickerParams: ['id', 'threadCount', 'subject', 'status', 'preview', 'createdAt', 'modifiedAt', 'user', 'tags', 'threads', 'rating'],
 
-    conversation(data){
+    conversation(data, username){
         return new Promise((resolve, reject) => {
             Q.all(_.map(data.items, (conversation, key) => {
                 const options = {
@@ -54,7 +54,7 @@ const mappers = {
                 return _submit(options);
             }))
                 .then(responses => {
-                    const items = _.map(responses, (data) => this.singleConversation(data.item, false));
+                    const items = _.map(responses, (data) => this.singleConversation(data.item, false. username));
                     data.items = items;
                     return resolve(data);
                 })
@@ -62,7 +62,7 @@ const mappers = {
         })
     },
 
-    singleConversation(conversation, getThreads = true){
+    singleConversation(conversation, getThreads = true, username){
         let pickerParams = _.clone(this.pickerParams);
         conversation.threads = _.map(conversation.threads, (thread, key) => {
             thread.createdBy = _.pick(thread.createdBy, ['firstName', 'lastName', 'email', 'photoUrl']);
@@ -81,6 +81,22 @@ const mappers = {
         conversation.user = _.pick(conversation.customer, ['firstName', 'lastName', 'email', 'photoUrl']);
         conversation = _.pick(conversation, pickerParams);
         return conversation;
+    },
+
+    mergeVotes(votes, conversations){
+        if(!votes || votes.length <= 0) return conversations;
+        if(conversations.items){
+            conversations.items =  _.map(conversations.items, (conversation)=>{
+               const vote = _.find(votes, (vote)=> vote.conversationId == conversation.id);
+               Object.assign(conversation, {voted:vote});
+               return conversation;
+            });
+        }
+        else{
+            const vote = _.find(votes, (vote)=> vote.conversationId == conversations.id);
+            Object.assign(conversations, {voted:vote});
+        }
+        return conversations;
     }
 
 };
@@ -234,7 +250,6 @@ function _submit(options) {
     })
 }
 
-
 function _initVoting(req, response, mailbox) {
 
     return new Promise((resolve) => {
@@ -308,8 +323,8 @@ function getQuestionsList(req) {
         }
         const options = _initConversationListParams(param);
         return _submit(options)
-            .then(response => mappers.conversation(response))
-            .then(response => resolve(response))
+            .then(response => mappers.conversation(response, req.user.username))
+            .then(response => resolve(mappers.mergeVotes(req.votedConversations, response)))
             .catch(err => reject(Response.onError(err, `Bad request`, 400)))
     })
 }
@@ -376,7 +391,7 @@ function getConversation(req) {
         };
         Object.assign(options, defaultParams);
         return _submit(options)
-            .then(response => resolve(mappers.singleConversation(response.item)))
+            .then(response => resolve(mappers.mergeVotes(req.votedConversations, mappers.singleConversation(response.item))))
             .catch(err => reject(Response.onError(err, `Bad request`, 400)))
     })
 }
@@ -463,6 +478,15 @@ function searchConversations(req) {
     })
 }
 
+function getUserVotedConversations(req){
+    return new Promise((resolve)=>{
+        if(!req.user) resolve(null);
+        HelpScoutVote.list(req.user.username)
+            .then(resolve)
+            .catch(err=> resolve(null));
+    })
+}
+
 
 module.exports = {
     getQuestionsList,
@@ -472,5 +496,6 @@ module.exports = {
     getConversation,
     updateConversation,
     getTags,
-    searchConversations
+    searchConversations,
+    getUserVotedConversations
 };
