@@ -43,6 +43,12 @@ function createQuestionThread(req, res, next){
     return _submit(req, res, params);
 }
 
+
+function updateQuestionThread(req, res, next){
+    const params = { type:'updateQuestionThread'};
+    return _submit(req, res, params);
+}
+
 function getConversation(req, res, next){
     const params = { type:'getConversation'};
     return _submit(req, res, params);
@@ -60,6 +66,11 @@ function getTags(req, res, next){
 
 function searchConversations(req, res, next){
     const params = { type:'searchConversations'};
+    return _submit(req, res, params);
+}
+
+function deleteConversation(req, res, next){
+    const params = { type:'deleteConversation'};
     return _submit(req, res, params);
 }
 
@@ -81,5 +92,7 @@ module.exports = {
     getConversation,
     updateConversation,
     getTags,
-    searchConversations
+    searchConversations,
+    updateQuestionThread,
+    deleteConversation
 };

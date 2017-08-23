@@ -81,6 +81,27 @@ SupportResponder.on('createQuestionThread', (req, cb) => {
         })
 });
 
+SupportResponder.on('updateQuestionThread', (req, cb) => {
+    Check.ifTokenValid(req)
+        .then(user=>{
+            Object.assign(req, {user:user});
+            return Ctrl.validateCustomer(req);
+        })
+        .then(customer=>{
+            Object.assign(req, {hsUser:customer});
+            return Ctrl.getConversation(req);
+        })
+        .then(conversation=>{
+            Object.assign(req, {conversation:conversation});
+            return Ctrl.updateQuestionThread(req);
+        })
+        .then(response=> cb(null, response))
+        .catch(err=> {
+            console.log('createQuestionThread  err', err);
+            return cb(err, null);
+        })
+});
+
 SupportResponder.on('getConversation', (req, cb) => {
     Check.getUserByToken(req)
         .then(user=>{
@@ -135,5 +156,15 @@ SupportResponder.on('searchConversations', (req, cb) => {
             console.log('getConversation  err', err);
             return cb(err, null);
         })
+});
+
+SupportResponder.on('deleteConversation', (req, cb) => {
+    Check.getUserByToken(req)
+        .then(user=>{
+            if(user) Object.assign(req, {user:user});
+            return Ctrl.deleteConversation(req)
+        })
+        .then(response=> cb(null, response))
+        .catch(err=> cb(err, null))
 });
 

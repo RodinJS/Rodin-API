@@ -66,7 +66,7 @@ const mappers = {
         let pickerParams = _.clone(this.pickerParams);
         conversation.threads = _.map(conversation.threads, (thread, key) => {
             thread.createdBy = _.pick(thread.createdBy, ['firstName', 'lastName', 'email', 'photoUrl']);
-            thread = _.pick(thread, ['body', 'createdBy', 'createdAt']);
+            thread = _.pick(thread, ['body', 'createdBy', 'createdAt', 'id']);
             return thread;
         });
         conversation.preview = _.last(conversation.threads).body;
@@ -121,6 +121,18 @@ function _initThreadParams(method, req) {
         url: `https://api.helpscout.net/v1/conversations/${req.params.conversationId}.json`,
         method: method,
         body: _initThread(req)
+    };
+    Object.assign(data, defaultParams);
+    return data;
+}
+
+function _initUpdateThread(req){
+    const data = {
+        url: `https://api.helpscout.net/v1/conversations/${req.params.conversationId}/threads/${req.body.threadId}.json`,
+        method: 'PUT',
+        body: {
+            body:req.body.description
+        }
     };
     Object.assign(data, defaultParams);
     return data;
@@ -381,12 +393,26 @@ function createQuestionThread(req) {
     })
 }
 
+function updateQuestionThread(req) {
+    return new Promise((resolve, reject) => {
+        if(!req.body.threadId) return reject(Response.onError(null, `Provide thread id`, 400));
+        if(!req.body.description) return reject(Response.onError(null, `Provide description`, 400));
+        const findThread = _.find(req.conversation.threads, (thread)=> thread.id == req.body.threadId && thread.createdBy.email == req.user.email);
+        if(!findThread) return reject(Response.onError(null, `invalid thread`, 400));
+        const threadParams = _initUpdateThread(req);
+        _submit(threadParams)
+            .then(response => resolve(`thread updated`))
+            .catch(err => reject(Response.onError(err, `Bad request`, 400)))
+    })
+}
+
 function getConversation(req) {
     return new Promise((resolve, reject) => {
-        if (_.isUndefined(req.params.id)) reject(Response.onError(null, `Provide conversation id`, 400));
+        const conversationId = req.params.conversationId || req.params.id;
+        if (_.isUndefined(conversationId)) return reject(Response.onError(null, `Provide conversation id`, 400));
 
         const options = {
-            url: `https://api.helpscout.net/v1/conversations/${req.params.id}.json`,
+            url: `https://api.helpscout.net/v1/conversations/${conversationId}.json`,
             method: 'GET',
         };
         Object.assign(options, defaultParams);
@@ -437,7 +463,6 @@ function updateConversation(req) {
                 return _initVoting(req, response, mailbox);
             })
             .then(voteField => {
-                console.log('voteField', voteField);
                 if (voteField)
                     Object.assign(options.body, {customFields: voteField});
                 return _submit(options)
@@ -487,15 +512,35 @@ function getUserVotedConversations(req){
     })
 }
 
+function deleteConversation(req){
+   return new Promise((resolve, reject)=>{
+       const conversationId = req.params.conversationId || req.params.id;
+       if (_.isUndefined(conversationId)) return reject(Response.onError(null, `Provide conversation id`, 400));
+       const options = {
+           url: `https://api.helpscout.net/v1/conversations/${conversationId}.json`,
+           method: 'DELETE',
+           auth: {
+               'user': apiKey,
+               'pass': 'X'
+           },
+       };
+       return _submit(options)
+           .then(response => resolve('Conversation deleted'))
+           .catch(err => reject(Response.onError(err, `Bad request`, 400)))
+   })
+}
+
 
 module.exports = {
     getQuestionsList,
     validateCustomer,
     createQuestion,
     createQuestionThread,
+    updateQuestionThread,
     getConversation,
     updateConversation,
     getTags,
     searchConversations,
-    getUserVotedConversations
+    getUserVotedConversations,
+    deleteConversation
 };
