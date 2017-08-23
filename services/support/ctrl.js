@@ -55,7 +55,7 @@ const mappers = {
             }))
                 .then(responses => {
                     const items = _.map(responses, (data) => this.singleConversation(data.item, false. username));
-                    data.items = items;
+                    data.items = _.sortBy(items, (item) =>  - new Date(item.createdAt));
                     return resolve(data);
                 })
                 .catch(err => reject(err));
@@ -212,7 +212,7 @@ function _initSearchParams(req) {
         qs: {
             query: `mailboxid:${mailboxId}`,
             pageSize: req.query.limit || 10,
-            page: req.query.page || 1
+            page: req.query.page || 1,
         }
     };
     if (req.query.subject) data.qs.query += ` AND subject:"${req.query.subject}"`;
@@ -220,7 +220,6 @@ function _initSearchParams(req) {
         data.qs.query += ` AND ${req.query.tags.map((date) => `tag:"${date}" `).join(" OR ")}`
     }
     Object.assign(data, defaultParams);
-    console.log('QUERY', data.qs.query);
     return data;
 }
 
