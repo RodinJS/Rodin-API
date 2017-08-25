@@ -43,4 +43,14 @@ module.exports = {
         },
     },
     stuff_path: '',
+    redis: {
+        // host: '40.121.202.156',
+        host: 'redis-domain',
+        port: 6379,
+        password: 'mTJV^ajEP4QJSSM6~SGHZZrX;fJz.NUm',
+        db: {
+            custom_domain: 1,
+            jwt: 2,
+        },
+    },
 };

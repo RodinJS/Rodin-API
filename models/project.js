@@ -193,7 +193,7 @@ ProjectSchema.statics = {
      * @returns {Promise<User, APIError>}
      */
     getOne(id, owner) {
-
+        // console.log(`id: ${id}, owner: ${owner}`)
         let query = {
             $and: [
                 {owner: owner},
@@ -213,7 +213,7 @@ ProjectSchema.statics = {
                 if (project) {
                     return project;
                 } else {
-                    const err = new APIError('No such project exists!----', httpStatus.NOT_FOUND, true);
+                    const err = new APIError('No such project exists!----++', httpStatus.NOT_FOUND, true);
                     return Promise.reject(err);
                 }
             })

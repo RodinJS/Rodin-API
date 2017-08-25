@@ -15,9 +15,10 @@ const paymentsRoutes = require('./payments');
 const editorRoutes = require('./editor');
 const supportRoutes = require('./support');
 const pagesRoutes = require('./pages');
-const modulesRoute = require('./modules');
-const socketServerRoute = require('./socketServer');
-const notificationsRoute = require('./notifications');
+const modulesRoutes = require('./modules');
+const socketServerRoutes = require('./socketServer');
+const notificationsRoutes = require('./notifications');
+const customDomainRoutes = require('./customDomain');
 
 const router = express.Router();
 
@@ -29,6 +30,10 @@ const apiRoutes = {
     user: {
         route: '/user',
         module: [RodinSanitizer.makeSanitize, userRoutes],
+    },    
+    customDomain: {
+        route: '/domains',
+        module: [RodinSanitizer.makeSanitize, customDomainRoutes],
     },
     project: {
         route: '/project',
@@ -60,15 +65,15 @@ const apiRoutes = {
     },
     modules: {
         route: '/modules',
-        module: [RodinSanitizer.makeSanitize, modulesRoute],
+        module: [RodinSanitizer.makeSanitize, modulesRoutes],
     },
     notifications: {
         route: '/notifications',
-        module: [RodinSanitizer.makeSanitize, notificationsRoute],
+        module: [RodinSanitizer.makeSanitize, notificationsRoutes],
     },
     socketServer:{
         route:'/socket-server',
-        module:[RodinSanitizer.makeSanitize, socketServerRoute]
+        module:[RodinSanitizer.makeSanitize, socketServerRoutes]
     }
 };
 

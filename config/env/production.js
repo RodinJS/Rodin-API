@@ -107,4 +107,14 @@ module.exports = {
     stuff_path: '/var/www/stuff/',
     nginx_template_path: '/var/www/api.rodinapp.com/resources/nginx/',
     nginx_dest_path: '/etc/nginx/custom/',
+    redis: {
+        // host: '40.121.202.156',
+        host: 'redis-domain',
+        port: 6379,
+        password: 'mTJV^ajEP4QJSSM6~SGHZZrX;fJz.NUm',
+        db: {
+            custom_domain: 1,
+            jwt: 2,
+        },
+    },
 };

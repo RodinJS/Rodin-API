@@ -110,6 +110,14 @@ module.exports = {
     },
     mandrill: 'ouOYaHWxlDaabLYVjrG1BA',
     stuff_path: '',
-    nginx_template_path: 'resources/nginx/',
-    nginx_dest_path: 'resources/domain_name/',
+    redis: {
+        host: '40.121.202.156',
+        port: 6333,
+        password: 'mTJV^ajEP4QJSSM6~SGHZZrX;fJz.NUm',
+        // password: 'Gag0',
+        db: {
+            custom_domain: 1,
+            jwt: 2,
+        },
+    },
 };
