@@ -1,7 +1,7 @@
 /**
  * Created by xgharibyan on 6/27/17.
  */
-
+const _  = require('lodash');
 const fs = require('fs');
 const path = require('path');
 const request = require('request');
@@ -16,14 +16,11 @@ const Notifications = require('../../models/notifications');
 const httpStatus = require('../../common/httpStatus');
 const RDSendgrid = require('../../common/sendgrid');
 const sg = sendgrid('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');
-
-
 const HookSecretKey = 'K7rd6FzEZwzcc6dQr3cv9kz4tTTZzAc9hdXYJpukvEnxmbdB42V4b6HePs5ZDTYLW_4000dram';
 
 function validateKey(req) {
-    return new Promise((resolve, reject)=>{
+    return new Promise((resolve, reject) => {
         const token = req.headers['x-access-token'];
-        console.log('token', token);
 
         if (token !== HookSecretKey) {
             return reject(Response.onError(null, `InvalidKey`, 404))
@@ -32,15 +29,14 @@ function validateKey(req) {
     })
 }
 
-function _sendEmail(req){
-    console.log('send EMAIL', req);
-    return new Promise((resolve, reject)=>{
+function _sendEmail(req) {
+    return new Promise((resolve, reject) => {
+
+
         req.mailSettings = {
             to: req.user.email,
-            from: 'team@rodin.io',
+            from: 'noreplay@rodin.io',
             fromName: 'Rodin team',
-            templateName: 'rodin_build',
-            subject: `${req.project.displayName} ${req.params.device} build complete`,
             handleBars: [{
                 name: 'dateTime',
                 content: utils.convertDate(),
@@ -58,25 +54,30 @@ function _sendEmail(req){
                 }],
         };
 
-        const appName =  (req.body.project && req.body.project.appName) ? req.body.project.appName : req.project.name;
+        const appName = (req.body.project && req.body.project.appName) ? req.body.project.appName : req.project.name;
         let notificationSTATUS = 200;
 
-        if(req.body.buildStatus === false && req.body.error) { // RO-840, RO-838
+        if (req.body.buildStatus == false && req.body.error) {
             const errorMessage = httpStatus[`${req.body.error.message}`] ? httpStatus[`${req.body.error.message}`].messgae : `build failed`;
             notificationSTATUS = 500;
-            req.notification = Response.onError(null, `${appName} ${req.params.device} ${errorMessage}`, notificationSTATUS);
-
+            //req.mailSettings.from = 'noreplay@rodin.io';
+            req.mailSettings.templateName = 'rodin_build_failed';
+            req.mailSettings.subject = `${req.project.displayName} ${req.params.device} build failed`;
+            req.mailSettings.handleBars.push({name:'buildId', content:req.body.buildId});
+            req.notification = Response.onError(true, `${appName} ${req.params.device} ${errorMessage}`, notificationSTATUS);
         }
         else {
+            req.mailSettings.templateName = 'rodin_build';
+            req.mailSettings.subject = `${req.project.displayName} ${req.params.device} build complete`;
             req.notification = `${appName} ${req.params.device} build complete`;
         }
 
 
         RDSendgrid.send(req)
-            .then(mailSent=>{
-                req.notification =  {
+            .then(mailSent => {
+                req.notification = {
                     username: req.user.username,
-                    label: req.notification.error ? req.notification.error.message : req.notification.data,
+                    label: req.notification.error ? req.notification.error.message : req.notification,
                     project: _.pick(req.project, ['_id', 'name']),
                     error: req.notification.error || false,
                     event: 'projectBuild',
@@ -90,7 +91,7 @@ function _sendEmail(req){
 
 function build(req) {
 
-    return new Promise((resolve, reject)=>{
+    return new Promise((resolve, reject) => {
         const validDevices = ['oculus', 'vive', 'daydream', 'gearvr', 'ios', 'android'];
 
         if (validDevices.indexOf(req.params.device) < 0) {
@@ -109,18 +110,18 @@ function build(req) {
                 if (!project) {
                     return reject(Response.onError(null, `Project not exist`, 404));
                 }
-                Object.assign(req, {project:project});
+                Object.assign(req, {project: project});
                 return User.get(project.owner)
             })
-            .then(user=>{
-                if(!user){
-                   return reject(Response.onError(null, `User Not Found`, 404));
+            .then(user => {
+                if (!user) {
+                    return reject(Response.onError(null, `User Not Found`, 404));
                 }
-                Object.assign(req, {user:user});
+                Object.assign(req, {user: user});
                 return _sendEmail(req);
             })
             .then(notification => resolve(notification))
-            .catch(err=>reject(Response.onError(err, `Can't send hook`, 400)))
+            .catch(err => reject(Response.onError(err, `Can't send hook`, 400)))
 
     });
 }
@@ -144,12 +145,12 @@ function update(req) {
     })
 }
 
-function remove(req){
-    return new Promise((resolve, reject)=>{
-        const queryParam = req.query.all ? { username: req.user.username } : { _id: req.query.id };
+function remove(req) {
+    return new Promise((resolve, reject) => {
+        const queryParam = req.query.all ? {username: req.user.username} : {_id: req.query.id};
         const successMessage = req.query.all ? 'All notifications deleted' : 'Notification deleted';
         Notifications.removeAsync(queryParam)
-            .then((deletedNotifications)=> {
+            .then((deletedNotifications) => {
                 if (deletedNotifications.result.ok === 1) {
                     return resolve(successMessage)
                 } else {
@@ -162,9 +163,9 @@ function remove(req){
 }
 
 module.exports = {
-    build:build,
-    validateKey:validateKey,
-    get:get,
-    update:update,
-    remove:remove,
+    build: build,
+    validateKey: validateKey,
+    get: get,
+    update: update,
+    remove: remove,
 };

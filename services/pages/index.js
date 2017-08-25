@@ -83,3 +83,12 @@ PagesResponder.on('getKnowlegeArticle', (req, cb) => {
         })
 });
 
+PagesResponder.on('menuList', (req, cb) => {
+    Ctrl.getMenuList(req)
+        .then(response=> cb(null, response))
+        .catch(err=> {
+            console.log('getQuestionsList  err', err);
+            return cb(err, null);
+        })
+});
+

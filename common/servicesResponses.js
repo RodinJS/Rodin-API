@@ -29,7 +29,7 @@ function sendError(res, service, data){
         message:'Bad request'
     };
     console.log(`Service error ${service}`, data);
-    res.status(err.status || 400).json({success:false, error:err});
+    if(res) res.status(err.status || 400).json({success:false, error:err});
 }
 
 module.exports = {

@@ -17,11 +17,13 @@ router.route('/:type')
 
 
 router.route('/thread/:conversationId')
-    .post(supportRequester.createQuestionThread);
+    .post(supportRequester.createQuestionThread)
+    .put(supportRequester.updateQuestionThread);
 
 router.route('/conversation/:type/:id')
     .get(supportRequester.getConversation)
-    .put(supportRequester.updateConversation);
+    .put(supportRequester.updateConversation)
+    .delete(supportRequester.deleteConversation);
 
 router.route('/tags/:type')
     .get(supportRequester.getTags);

@@ -238,7 +238,9 @@ const httpStatus = {
         code:374,
         messgae: `build failed. Incorrect Provisioning profile.`,        
     },
-
+    GIT_ALREADY_SYNCED:{
+      message:'GitHub sync error. Please contact the support@rodin.io, if you think there is an error.'
+    },
 
     // working with sockets [600~]
     BAD_SOCKET_REQUEST: 600,

@@ -11,6 +11,7 @@ const APIError = require('../../common/APIError');
 const httpStatus = require('../../common/httpStatus');
 const Response = require('../../common/servicesResponses');
 const Landing = require('../../models/landing');
+const Menus = require('../../models/menus');
 const Pages = require('../../models/pages');
 
 const helscoutKey = '30cb62d47f4d29a73e6f1e268a90a5c7102178fd';
@@ -119,6 +120,14 @@ function getKnowlegeArticle(req){
     })
 }
 
+function getMenuList(req){
+    return new Promise((resolve, reject)=>{
+        Menus.getMenusList()
+            .then((menusList) => resolve(menusList))
+            .catch(err=>reject(Response.onError(err, `Bad request`, 400)))
+    })
+}
+
 
 
 module.exports = {
@@ -127,5 +136,6 @@ module.exports = {
     getFaq,
     getKnowledgeCategories,
     getKnowlegeCategoryArticles,
-    getKnowlegeArticle
+    getKnowlegeArticle,
+    getMenuList
 };

@@ -19,6 +19,7 @@ const modulesRoutes = require('./modules');
 const socketServerRoutes = require('./socketServer');
 const notificationsRoutes = require('./notifications');
 const customDomainRoutes = require('./customDomain');
+const menusRoutes = require('./menus');
 
 const router = express.Router();
 
@@ -74,7 +75,11 @@ const apiRoutes = {
     socketServer:{
         route:'/socket-server',
         module:[RodinSanitizer.makeSanitize, socketServerRoutes]
-    }
+    },
+    menus: {
+        route: '/menus',
+        module: [menusRoutes],
+    },
 };
 
 _.each(apiRoutes, (route, key) => {

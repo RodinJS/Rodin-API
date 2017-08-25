@@ -5,6 +5,7 @@
 const jwt = require('jsonwebtoken');
 const _ = require('lodash');
 const fs = require('fs');
+const httpStatus = require('../../common/httpStatus');
 const config = require('../../config/env');
 const utils = require('../../common/utils');
 const User = require('../../models/user');
@@ -177,13 +178,6 @@ function socialAuth(req) {
                 break;
             case 'github':
                 Object.assign(queryMethod, {$or: [{'github.id': req.body.id}]});
-                Object.assign(userObject, {
-                    facebook: {
-                        id: req.body.id,
-                        token: req.gitAccessToken,
-                        email: req.body.socialEmail
-                    }
-                });
                 _.set(userObject, 'github', {
                     id: req.body.id,
                     token: req.gitAccessToken,
@@ -196,7 +190,6 @@ function socialAuth(req) {
 
         return User.findOne(queryMethod)
             .then(user => {
-                console.log('user', user);
                 if (!user) {
                     Object.assign(userObject, {
                         email: req.body.email,
@@ -211,6 +204,7 @@ function socialAuth(req) {
                     });
                     return _saveUserFromSocial(userObject);
                 }
+                if(req.params.socialName == 'github') return reject(Response.onError(null, httpStatus.GIT_ALREADY_SYNCED.message, 400));
                 return _updateUserFromSocial(req, user);
             })
             .then(data => {

@@ -17,7 +17,10 @@ function push(req){
         Object.assign(data, {
             username:req.notification.username,
             event:req.notification.event,
-            content:req.notification
+            content:{
+                error: req.notification || data.content.error,
+                label:req.notification.label.message || req.notification.label
+            }
         });
     }
 

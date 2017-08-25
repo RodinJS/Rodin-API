@@ -43,7 +43,7 @@ const defaultParams = {
 const mappers = {
     pickerParams: ['id', 'threadCount', 'subject', 'status', 'preview', 'createdAt', 'modifiedAt', 'user', 'tags', 'threads', 'rating'],
 
-    conversation(data){
+    conversation(data, username){
         return new Promise((resolve, reject) => {
             Q.all(_.map(data.items, (conversation, key) => {
                 const options = {
@@ -54,19 +54,19 @@ const mappers = {
                 return _submit(options);
             }))
                 .then(responses => {
-                    const items = _.map(responses, (data) => this.singleConversation(data.item, false));
-                    data.items = items;
+                    const items = _.map(responses, (data) => this.singleConversation(data.item, false. username));
+                    data.items = _.sortBy(items, (item) =>  - new Date(item.createdAt));
                     return resolve(data);
                 })
                 .catch(err => reject(err));
         })
     },
 
-    singleConversation(conversation, getThreads = true){
+    singleConversation(conversation, getThreads = true, username){
         let pickerParams = _.clone(this.pickerParams);
         conversation.threads = _.map(conversation.threads, (thread, key) => {
             thread.createdBy = _.pick(thread.createdBy, ['firstName', 'lastName', 'email', 'photoUrl']);
-            thread = _.pick(thread, ['body', 'createdBy', 'createdAt']);
+            thread = _.pick(thread, ['body', 'createdBy', 'createdAt', 'id']);
             return thread;
         });
         conversation.preview = _.last(conversation.threads).body;
@@ -81,6 +81,22 @@ const mappers = {
         conversation.user = _.pick(conversation.customer, ['firstName', 'lastName', 'email', 'photoUrl']);
         conversation = _.pick(conversation, pickerParams);
         return conversation;
+    },
+
+    mergeVotes(votes, conversations){
+        if(!votes || votes.length <= 0) return conversations;
+        if(conversations.items){
+            conversations.items =  _.map(conversations.items, (conversation)=>{
+               const vote = _.find(votes, (vote)=> vote.conversationId == conversation.id);
+               Object.assign(conversation, {voted:vote});
+               return conversation;
+            });
+        }
+        else{
+            const vote = _.find(votes, (vote)=> vote.conversationId == conversations.id);
+            Object.assign(conversations, {voted:vote});
+        }
+        return conversations;
     }
 
 };
@@ -105,6 +121,18 @@ function _initThreadParams(method, req) {
         url: `https://api.helpscout.net/v1/conversations/${req.params.conversationId}.json`,
         method: method,
         body: _initThread(req)
+    };
+    Object.assign(data, defaultParams);
+    return data;
+}
+
+function _initUpdateThread(req){
+    const data = {
+        url: `https://api.helpscout.net/v1/conversations/${req.params.conversationId}/threads/${req.body.threadId}.json`,
+        method: 'PUT',
+        body: {
+            body:req.body.description
+        }
     };
     Object.assign(data, defaultParams);
     return data;
@@ -184,7 +212,7 @@ function _initSearchParams(req) {
         qs: {
             query: `mailboxid:${mailboxId}`,
             pageSize: req.query.limit || 10,
-            page: req.query.page || 1
+            page: req.query.page || 1,
         }
     };
     if (req.query.subject) data.qs.query += ` AND subject:"${req.query.subject}"`;
@@ -192,7 +220,6 @@ function _initSearchParams(req) {
         data.qs.query += ` AND ${req.query.tags.map((date) => `tag:"${date}" `).join(" OR ")}`
     }
     Object.assign(data, defaultParams);
-    console.log('QUERY', data.qs.query);
     return data;
 }
 
@@ -233,7 +260,6 @@ function _submit(options) {
         });
     })
 }
-
 
 function _initVoting(req, response, mailbox) {
 
@@ -308,8 +334,8 @@ function getQuestionsList(req) {
         }
         const options = _initConversationListParams(param);
         return _submit(options)
-            .then(response => mappers.conversation(response))
-            .then(response => resolve(response))
+            .then(response => mappers.conversation(response, req.user.username))
+            .then(response => resolve(mappers.mergeVotes(req.votedConversations, response)))
             .catch(err => reject(Response.onError(err, `Bad request`, 400)))
     })
 }
@@ -366,17 +392,31 @@ function createQuestionThread(req) {
     })
 }
 
+function updateQuestionThread(req) {
+    return new Promise((resolve, reject) => {
+        if(!req.body.threadId) return reject(Response.onError(null, `Provide thread id`, 400));
+        if(!req.body.description) return reject(Response.onError(null, `Provide description`, 400));
+        const findThread = _.find(req.conversation.threads, (thread)=> thread.id == req.body.threadId && thread.createdBy.email == req.user.email);
+        if(!findThread) return reject(Response.onError(null, `invalid thread`, 400));
+        const threadParams = _initUpdateThread(req);
+        _submit(threadParams)
+            .then(response => resolve(`thread updated`))
+            .catch(err => reject(Response.onError(err, `Bad request`, 400)))
+    })
+}
+
 function getConversation(req) {
     return new Promise((resolve, reject) => {
-        if (_.isUndefined(req.params.id)) reject(Response.onError(null, `Provide conversation id`, 400));
+        const conversationId = req.params.conversationId || req.params.id;
+        if (_.isUndefined(conversationId)) return reject(Response.onError(null, `Provide conversation id`, 400));
 
         const options = {
-            url: `https://api.helpscout.net/v1/conversations/${req.params.id}.json`,
+            url: `https://api.helpscout.net/v1/conversations/${conversationId}.json`,
             method: 'GET',
         };
         Object.assign(options, defaultParams);
         return _submit(options)
-            .then(response => resolve(mappers.singleConversation(response.item)))
+            .then(response => resolve(mappers.mergeVotes(req.votedConversations, mappers.singleConversation(response.item))))
             .catch(err => reject(Response.onError(err, `Bad request`, 400)))
     })
 }
@@ -422,7 +462,6 @@ function updateConversation(req) {
                 return _initVoting(req, response, mailbox);
             })
             .then(voteField => {
-                console.log('voteField', voteField);
                 if (voteField)
                     Object.assign(options.body, {customFields: voteField});
                 return _submit(options)
@@ -463,14 +502,44 @@ function searchConversations(req) {
     })
 }
 
+function getUserVotedConversations(req){
+    return new Promise((resolve)=>{
+        if(!req.user) resolve(null);
+        HelpScoutVote.list(req.user.username)
+            .then(resolve)
+            .catch(err=> resolve(null));
+    })
+}
+
+function deleteConversation(req){
+   return new Promise((resolve, reject)=>{
+       const conversationId = req.params.conversationId || req.params.id;
+       if (_.isUndefined(conversationId)) return reject(Response.onError(null, `Provide conversation id`, 400));
+       const options = {
+           url: `https://api.helpscout.net/v1/conversations/${conversationId}.json`,
+           method: 'DELETE',
+           auth: {
+               'user': apiKey,
+               'pass': 'X'
+           },
+       };
+       return _submit(options)
+           .then(response => resolve('Conversation deleted'))
+           .catch(err => reject(Response.onError(err, `Bad request`, 400)))
+   })
+}
+
 
 module.exports = {
     getQuestionsList,
     validateCustomer,
     createQuestion,
     createQuestionThread,
+    updateQuestionThread,
     getConversation,
     updateConversation,
     getTags,
-    searchConversations
+    searchConversations,
+    getUserVotedConversations,
+    deleteConversation
 };
