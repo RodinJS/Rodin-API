@@ -107,6 +107,7 @@ resources/nginx/**/*
 !resources/nginx/.gitkeap
 
 modules/client/pending/**/*
+publicModules/users/**/*
 
 #github tmp folder
 gago

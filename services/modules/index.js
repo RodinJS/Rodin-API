@@ -191,8 +191,21 @@ ModulesResponder.on('socketServerFile', (req, cb)=>{
         });
 });
 
+ModulesResponder.on('serveFile', (req, cb)=>{
+    Ctrl.validateModules(req)
+        .then(module => {
+            Object.assign(req, {modules:module});
+            return cb(null, Ctrl.serverFile(req), 202);
+        })
+        //.then(response=> cb(null, response, 202))
+        .catch(err=> {
+            console.log('Modules get  err', err);
+            return cb(err, null);
+        });
+});
+
 ModulesResponder.on('socketServerSubscribe', (req, cb)=>{
-    apiSocketHandler.subscribe(req)
+    apiSocket.subscribe(req)
         .then(response=> cb(null, response))
         .catch(err=> {
             console.log('Modules get  err', err);

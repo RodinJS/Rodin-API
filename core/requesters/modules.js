@@ -86,6 +86,11 @@ function socketServerFile(req, res, next){
     return _submit(req, res, params);
 }
 
+function serveFile(req, res, next){
+    const params = { type:'serveFile'};
+    return _submit(req, res, params);
+}
+
 function socketServerSubscribe(req, res, next){
     const params = { type:'socketServerSubscribe'};
     return _submit(req, res, params);
@@ -118,5 +123,6 @@ module.exports = {
     unsubscribe,
     assignToProject,
     socketServerFile,
-    socketServerSubscribe
+    socketServerSubscribe,
+    serveFile
 };

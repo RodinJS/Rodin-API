@@ -74,7 +74,7 @@ class RodinSocket {
             this.ns = response.data.ns;
             this.host = params.host;
             debug('NS SETTINGS', [this.ns, params, this.host]);
-            this.Socket = io(`${this.host}/${this.ns}`, {
+            this.Socket = io(`http://localhost:5000/${this.ns}`, {
                 query: data,
                 resource: "socket.io"
                 //transports: ['websocket', 'polling']

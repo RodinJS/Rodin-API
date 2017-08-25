@@ -2,6 +2,7 @@
  * Created by xgharibyan on 6/27/17.
  */
 
+const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser');
 const compress = require('compression');
@@ -12,6 +13,7 @@ const APIError = require('../common/APIError');
 const httpStatus = require('../common/httpStatus');
 const apiRoutes = require('./routes');
 const config = require('../config/env');
+const modulesRequest = require('./requesters/modules');
 
 const app = express();
 const server = require('http').Server(app);
@@ -27,6 +29,13 @@ app.all('*', function(req, res, next) {
     //console.log(req.method, req.url);
     next();
 });
+
+if(config.env == 'local'){
+    app.use('/projects', express.static(path.join(__dirname, '../', 'projects')));
+}
+
+
+app.use('/modules', modulesRequest.serveFile);
 
 app.use('/api', apiRoutes);
 

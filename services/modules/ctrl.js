@@ -2,6 +2,7 @@
  * Created by xgharibyan on 6/27/17.
  */
 const _ = require('lodash');
+const babel = require("babel-core");
 const jwt = require('jsonwebtoken');
 const Promise = require('bluebird');
 const StrDecoder = require('string_decoder');
@@ -31,10 +32,36 @@ function _checkDeveloperKey(token) {
         if (!token) return resolve(null);
         jwt.verify(token, config.jwtSecret, function (err, decoded) {
             if (err) return reject(err);
-            console.log('decoded', decoded.exp);
             if (new Date(decoded.exp * 1000) < new Date()) return reject('Expired');
             return resolve(decoded);
         })
+    })
+}
+
+function _getProjectFromModulesRequest(req) {
+    return new Promise((resolve, reject) => {
+        _checkDeveloperKey(req.headers['rodin-key'])
+            .then(decoded => {
+                const innerQuery = {};
+                if (decoded) {
+                    Object.assign(innerQuery, {developerKey: req.headers['rodin-key']});
+                }
+                else if (_.indexOf(allowedHosts, req.headers.host) < 0) {
+                    if (!req.headers.referer) return null;
+                    const refererPath = URL.parse(req.headers.referer).path.split('/');
+                    const projectRoot = refererPath.length == 1 ?
+                        refererPath[0] :
+                        _.indexOf(refererPath[refererPath.length - 1], '.index.html') > -1 ?
+                            refererPath[refererPath.length - 1] :
+                            refererPath[refererPath.length - 2];
+                    Object.assign(innerQuery, {root: projectRoot});
+                }
+                else {
+                    Object.assign(innerQuery, {domain: req.headers.host});
+                }
+                return resolve(Project.get(innerQuery))
+            })
+            .catch(reject)
     })
 }
 
@@ -184,9 +211,9 @@ function approveReject(req) {
             compilation_level: 'SIMPLE',
         });
 
-        closureCompiler.run((exitCode, stdOut, stdErr) => {
 
-            if ((exitCode > 0 ) || stdErr)  return reject(Response.onError(stdErr, `Bad request`, 400));
+        babel.transformFile(indexFile, { presets: ['es2015']},  (err, result) => {
+            //result.code
 
             const publicModulesDir = `${config.stuff_path}publicModules/users/`;
             const publicModuleDir = `${publicModulesDir}${module.url}`;
@@ -195,16 +222,61 @@ function approveReject(req) {
             fsExtra.ensureDir(publicModuleDir)
                 .then(() => fsExtra.ensureFile(publicIndexFile))
                 .then(() => {
-                    fs.writeFileSync(publicIndexFile, stdOut);
+                    fs.writeFileSync(publicIndexFile, `(function(){ \n${result.code}\n }).call(this)`);
 
                     req.body.approvedDate = Date.now();
                     req.body.rejectedDate = null;
                     return resolve({rejectedDate: null, approvedDate: Date.now()})
                 })
-                .catch(err => reject(Response.onError(err, `Bad request`, 400)))
+                .catch(err => reject(Response.onError(err, `Bad request`, 400)));
         });
     })
 
+}
+
+function validateModules(req) {
+    return new Promise((resolve, reject)=>{
+        let expiredModules = [];
+        _getProjectFromModulesRequest(req)
+            .then(project => {
+                if (!project) return reject(Response.onError(null, `Unauthorized`, httpStatus.UNAUTHORIZED));
+                project = project.toObject();
+                return ModulesAssign.get(project._id)
+            })
+            .then(modules => {
+                if (!modules) return reject(Response.onError(null, `Modules not assigned to current project`, httpStatus.UNAUTHORIZED));
+
+                return Promise.all(_.map(modules, (module) => {
+                    module = module.toObject();
+                    return ModulesSubscribe.getByOwnerAndModuleId(module.owner, module.moduleId)
+                }));
+            })
+            .then(modules => {
+
+                expiredModules = _.filter(modules, (module) => new Date(module.expiredAt) <= new Date());
+
+                const subscribed = _.filter(modules, (module) => new Date(module.expiredAt) > new Date());
+
+                return Promise.all(_.map(subscribed, (module) => {
+                    return Modules.getById(module.moduleId);
+                }));
+
+            })
+            .then(modules => {
+
+                const completeModules = _.reduce(_.concat([], expiredModules, modules), (acc, module, key) => {
+                    module = module.toObject();
+                    if (module.expiredAt) {
+                        acc.push({error: 'Subscription expired', module: null})
+                    }
+                    acc.push({error: null, module: module});
+                    return acc;
+                }, []);
+
+                return resolve(completeModules)
+            })
+            .catch(err => reject(Response.onError(err, `bad request`, httpStatus.BAD_REQUEST)))
+    })
 }
 
 function auth(req) {
@@ -212,28 +284,7 @@ function auth(req) {
         const moduleId = req.body.moduleId || req.params.moduleId || req.query.moduleId;
         if (_.isUndefined(moduleId)) return reject(Response.onError(null, `Provide module id`, httpStatus.BAD_REQUEST));
 
-        _checkDeveloperKey(req.headers['rodin-key'])
-            .then(decoded => {
-                const innerQuery = {};
-                if (decoded) {
-                    Object.assign(innerQuery, {developerKey: req.headers['rodin-key']});
-                }
-                else if (_.indexOf(allowedHosts, req.headers.host) < 0) {
-                    if (!req.headers.referer) return null;
-                    const refererPath = URL.parse(req.headers.referer).path.split('/');
-                    const projectRoot = refererPath.length == 1 ?
-                                        refererPath[0] :
-                                        _.indexOf(refererPath[refererPath.length - 1], '.index.html') > -1 ?
-                                        refererPath[refererPath.length - 1] :
-                                        refererPath[refererPath.length - 2];
-                    Object.assign(innerQuery, {root: projectRoot});
-                }
-                else {
-                    Object.assign(innerQuery, {domain: req.headers.host});
-                }
-                console.log('innerQuery', innerQuery);
-                return Project.get(innerQuery)
-            })
+        _getProjectFromModulesRequest(req)
             .then(project => {
                 if (!project) return reject(Response.onError(null, `Unauthorized`, httpStatus.UNAUTHORIZED));
                 project = project.toObject();
@@ -254,6 +305,7 @@ function getMyModules(req) {
         let validModules = [];
         let expiredModules = [];
         let subscribedModulesIds = [];
+        let modules = [];
         ModulesSubscribe.getByOwner(req.user.username)
             .then(subscribedModules => {
 
@@ -270,14 +322,19 @@ function getMyModules(req) {
                         ModulesSubscribe.delete(module._id);
                     })
                 }
+                return Modules.find({_id: {$in: subscribedModulesIds}})
+            })
+            .then(modulesList => {
+                modules = modulesList;
                 return ModulesAssign.find({
                     owner: req.user.username,
                     moduleId: {$in: subscribedModulesIds},
                 })
             })
-            .then(modules => {
-                const assignedModules = _.map(modules.map(m => m.toObject()), (module) => {
-                    let assigned = _.filter(modules, (m) => m.toObject().moduleId.toString() === module._id.toString());
+            .then(assignedModules => {
+                const mappedModules = _.map(modules.map(m => m.toObject()), (module) => {
+                    console.log('module', module);
+                    let assigned = _.filter(assignedModules, (m) => m.toObject().moduleId.toString() === module._id.toString());
                     if (assigned.length > 0) {
                         module.projects = _.map(assigned, (assign) => {
                             req.module = module;
@@ -290,13 +347,13 @@ function getMyModules(req) {
                         });
                     }
                     let moduleInfo = _.find(validModules, (subscribedModule) => subscribedModule.moduleId.toString() === module._id.toString());
-                    if(moduleInfo){
+                    if (moduleInfo) {
                         module.unsubscribed = moduleInfo.unsubscribed;
                         module.expiredAt = moduleInfo.expiredAt;
                     }
                     return module;
                 });
-                return resolve(assignedModules);
+                return resolve(mappedModules);
             })
             .catch(err => reject(Response.onError(err, `Bad request`, httpStatus.BAD_REQUEST)))
 
@@ -308,8 +365,8 @@ function generateScript(req) {
     return `<script src="${config.modules.socketService.URL}/${req.module.url}?projectId=${projectID}&host=${config.modules.socketService.URL}"></script>`;
 }
 
-function checkIsSubscribed(req){
-    return new Promise((resolve, reject)=>{
+function checkIsSubscribed(req) {
+    return new Promise((resolve, reject) => {
         if (_.isUndefined(req.body.moduleId)) {
             return reject(Response.onError(null, `Provide module id`, httpStatus.BAD_REQUEST))
         }
@@ -321,27 +378,27 @@ function checkIsSubscribed(req){
 }
 
 function update(req) {
-  return new Promise((resolve, reject)=>{
-      if (_.isUndefined(req.body.allowedHosts) || _.isEmpty(req.body.allowedHosts)) {
-          return reject(Response.onError(null, `Provide allowed hosts`, httpStatus.BAD_REQUEST))
-      }
+    return new Promise((resolve, reject) => {
+        if (_.isUndefined(req.body.allowedHosts) || _.isEmpty(req.body.allowedHosts)) {
+            return reject(Response.onError(null, `Provide allowed hosts`, httpStatus.BAD_REQUEST))
+        }
 
-      if (_.isUndefined(req.body.projectId)) {
-          return reject(Response.onError(null, `Provide project id`, httpStatus.BAD_REQUEST))
-      }
+        if (_.isUndefined(req.body.projectId)) {
+            return reject(Response.onError(null, `Provide project id`, httpStatus.BAD_REQUEST))
+        }
 
-      const query = {owner: req.user.username, projectId: req.body.projectId, moduleId: req.module._id};
-      const update = {$set: {allowedHosts: req.body.allowedHosts}};
+        const query = {owner: req.user.username, projectId: req.body.projectId, moduleId: req.module._id};
+        const update = {$set: {allowedHosts: req.body.allowedHosts}};
 
-      ModulesAssign.findOneAndUpdate(query, update, {new: true})
-          .then(assignedModule => resolve(assignedModule))
-          .catch(err => reject(Response.onError(err, `Bad request`, httpStatus.BAD_REQUEST)))
-  });
+        ModulesAssign.findOneAndUpdate(query, update, {new: true})
+            .then(assignedModule => resolve(assignedModule))
+            .catch(err => reject(Response.onError(err, `Bad request`, httpStatus.BAD_REQUEST)))
+    });
 
 }
 
-function subscribe(req){
-    return new Promise((resolve, reject)=>{
+function subscribe(req) {
+    return new Promise((resolve, reject) => {
         ModulesSubscribe.findOne({moduleId: req.module._id, owner: req.user.username})
             .then(module => {
 
@@ -363,15 +420,15 @@ function subscribe(req){
                     moduleId: req.module._id,
                     owner: req.user.username,
                 });
-                return  subscribeModule.saveAsync()
+                return subscribeModule.saveAsync()
             })
             .then(subscribedModule => resolve(subscribedModule))
             .catch(err => reject(Response.onError(err, `Bad request`, httpStatus.BAD_REQUEST)))
     })
 }
 
-function unsubscribe(req){
-    return new Promise((resolve, reject)=>{
+function unsubscribe(req) {
+    return new Promise((resolve, reject) => {
         ModulesSubscribe.findOneAndUpdate({
             moduleId: req.module._id,
             owner: req.user.username,
@@ -381,8 +438,8 @@ function unsubscribe(req){
     })
 }
 
-function assignToProject(req){
-    return new Promise((resolve, reject)=>{
+function assignToProject(req) {
+    return new Promise((resolve, reject) => {
         if (_.isUndefined(req.body.projectId)) {
             return reject(Response.onError(null, `Provide project id`, httpStatus.BAD_REQUEST));
         }
@@ -405,6 +462,34 @@ function assignToProject(req){
     })
 }
 
+function serverFile(req) {
+    //console.log('sereFile', req);
+
+    req.modules = req.body.modules || req.modules;
+
+    console.log(req.modules);
+
+    let content = '';
+    if (!req.modules || req.modules.length <= 0) {
+        content += `var error = '${req.error || 'No assigned modules'}';\n throw new Error(error);`;
+    }
+    else{
+        _.each(req.modules, (moduleData, key)=>{
+            if(moduleData.error){
+                content += `var error = '${moduleData.error || 'Bad request'}';\n throw new Error(error);`;
+            }
+            const module = moduleData.module;
+            const moduleOwnerDirName = module.author == 'Rodin team' ? 'rodin' : 'users';
+            const moduleGlobalDir = `${__dirname}/../../publicModules/${moduleOwnerDirName}/`;
+            const moduleDir = `${moduleGlobalDir}${module.url}`;
+            const indexFile = `${moduleDir}/client.js`;
+
+            content += `\n${fs.readFileSync(indexFile, 'utf8')}\n\n`;
+        });
+    }
+    return content;
+}
+
 module.exports = {
     list,
     create,
@@ -421,5 +506,7 @@ module.exports = {
     update,
     subscribe,
     unsubscribe,
-    assignToProject
+    assignToProject,
+    serverFile,
+    validateModules
 };
