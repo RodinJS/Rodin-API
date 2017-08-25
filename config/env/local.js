@@ -116,8 +116,8 @@ module.exports = {
         password: 'mTJV^ajEP4QJSSM6~SGHZZrX;fJz.NUm',
         // password: 'Gag0',
         db: {
-            custom_domain: 1,
-            jwt: 2,
+            custom_domain: 0,
+            jwt: 1,
         },
     },
 };

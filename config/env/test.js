@@ -49,8 +49,8 @@ module.exports = {
         port: 6379,
         password: 'mTJV^ajEP4QJSSM6~SGHZZrX;fJz.NUm',
         db: {
-            custom_domain: 1,
-            jwt: 2,
+            custom_domain: 0,
+            jwt: 1,
         },
     },
 };
