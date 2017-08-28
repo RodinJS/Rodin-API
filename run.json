@@ -69,6 +69,11 @@
       "name": "modulesService",
       "script": "services/modules/index.js",
       "watch": "services/modules/**/*.js"
+    },
+    {
+      "name": "customDomainService",
+      "script": "services/customDomain/index.js",
+      "watch": "services/customDomain/**/*.js"
     }
 
 

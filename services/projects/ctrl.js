@@ -164,7 +164,7 @@ function create(req) {
                 const rootDir = `${config.stuff_path}projects/${req.user.username}/${project.root}`;
                 const historyDir = `${config.stuff_path}history/${req.user.username}/${project.root}`;
 
-                if (!fs.existsSync(historyDir)) fs.mkdirSync(historyDir); //creating root dir for project
+                if (!fs.existsSync(historyDir)) fs.mkdirSync(historyDir); //creating history dir for project
 
                 if (!fs.existsSync(rootDir)) fs.mkdirSync(rootDir); //creating root dir for project
 

@@ -10,13 +10,15 @@ const User = require('../models/user');
 const Project = require('../models/project');
 const userCapacity  = require('./directorySize');
 const utils = require('./utils');
+const Response = require('./servicesResponses');
 
+// return reject(Response.onError(null, ``, 400)
 
 function _getUser(decoded){
     return new Promise((resolve, reject)=>{
         User.get(decoded.username)
             .then(user => {
-                if (!user) return reject('Invalid token!');
+                if (!user) return reject(Response.onError(null, `Invalid token!`, 401)); 
                 user = user.toObject();
                 const data = {};
                 Object.assign(data, _.pick(user, ['email',
@@ -40,17 +42,17 @@ function _getUser(decoded){
                 });
                 return resolve(data);
             })
-            .catch(err => reject('Invalid token!'));
+            .catch(err => reject(Response.onError(null, `Invalid token!`, 401)));
     })
 }
 
 function ifTokenValid(req) {
 
     return new Promise((resolve, reject) => {
-        if (!req.headers['x-access-token']) return reject(`Token does not provided!`);
+        if (!req.headers['x-access-token']) return reject(Response.onError(null, `Token does not provided!`, 401));
         const token = req.headers['x-access-token'];
         jwt.verify(token, config.jwtSecret, (err, decoded) => {
-            if (err) return reject(`Invalid token or secret`);
+            if (err) return reject(Response.onError(null, `Invalid token or secret`, 401));
             _getUser(decoded)
                 .then(resolve)
                 .catch(reject)
@@ -62,7 +64,7 @@ function ifTokenValid(req) {
 function ifSelfUpdate(req, res, next) {
     return new Promise((resolve, reject) => {
         if (req.user.username !== req.params.username) {
-            return reject(`Access to update denied`)
+            return reject(Response.onError(null, `Access to update denied!`, 401));
         }
         return resolve(true);
     });
@@ -85,30 +87,30 @@ function isGod(req) {
        jwt.verify(token, config.jwtSecret, function (err, decoded) {
            if (err) return reject(`You are not authenticated!`);
            if(decoded.role === 'God') return resolve(true);
-           return reject('You are not authorized to perform this operation!');
+           return reject(Response.onError(null, `You are not authorized to perform this operation!`, 401));
        });
    })
 }
 
 function project(req) {
     return new Promise((resolve, reject) => {
-        const projectID = req.query.id || req.params.id;
-        if (!projectID) return reject(`Provide project ID!`);
+        const projectID = req.query.id || req.params.id || req.body.id;
+        if (!projectID) return reject(Response.onError(null, `Provide project ID!`, 400));
         Project.getOne(projectID, req.user.username)
             .then((project) => resolve({
                 name: project.name,
                 root: project.root,
                 displayName: project.displayName,
             }))
-            .catch(err => reject(`Access to project denied!`))
+            .catch(err => reject(Response.onError(null, `Access to project denied!`, 401)))
     });
 }
 
 function isProjectOwn(req) {
     return new Promise((resolve, reject) => {
-        Project.getOne(req.params.id, req.user.username)
+        Project.getOne(req.params.id || req.body.id || req.query.id, req.user.username)
             .then(project => resolve(project))
-            .catch(err => reject('Access to project denied!'))
+            .catch(err => reject(Response.onError(null, `Access to project denied!`, 401)))
     });
 }
 
@@ -136,7 +138,7 @@ function validateStorage(req) {
             }
 
             if (utils.byteToMb(size) >= storageMaxCapacity) {
-                return reject('Storage is full')
+                return reject(Response.onError(null, `Storage is full!`, 400));
             }
 
             resolve(true);
