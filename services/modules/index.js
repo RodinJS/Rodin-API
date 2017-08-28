@@ -179,9 +179,9 @@ ModulesResponder.on('unsubscribe', (req, cb)=>{
 });
 
 ModulesResponder.on('socketServerFile', (req, cb)=>{
-    Ctrl.auth(req)
-        .then(module => {
-            Object.assign(req, {module:module});
+    Ctrl.validateModules(req)
+        .then(modules => {
+            Object.assign(req, {modules:modules});
             return apiSocketHandler.serverFile(req);
         })
         .then(response=> cb(null, response, 202))

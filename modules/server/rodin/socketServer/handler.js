@@ -46,11 +46,12 @@ function validate(req, res, next) {
 
 function serverFile(req) {
    return new Promise((resolve, reject)=>{
-       if (!req.module) {
+       if (!req.modules) {
            return resolve(`var error = '${req.error}';\n throw new Error(error);`);
        }
        const socketIO = fs.readFileSync(`${__dirname}/../../../../node_modules/socket.io-client/dist/socket.io.js`, 'utf8');
-       const clinetJS = fs.readFileSync(`${__dirname}/client.js`, 'utf8');
+       let clinetJS = fs.readFileSync(`${__dirname}/client.js`, 'utf8');
+       clinetJS = clinetJS.replace(`{socketURL}`, config.socketURL).replace(`{subscriptionURL}`, config.host);
        return resolve(socketIO+clinetJS);
    })
 }

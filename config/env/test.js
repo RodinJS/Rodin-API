@@ -4,7 +4,8 @@ module.exports = {
     db: 'mongodb://localhost/rodin-js-api-test',
     port: 5000,
     socketPort: 6000,
-    socketURL: 'http://localhost:6000',
+    host:'http://localhost:3000',
+    socketURL: 'http://localhost:5000',
     clientURL: 'https://rodin.space',
     modules: {
         socketService: {

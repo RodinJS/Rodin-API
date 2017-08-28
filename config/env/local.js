@@ -6,7 +6,8 @@ module.exports = {
     editorURL: 'http://localhost:8000/#',
     port: 3000,
     socketPort: 4000,
-    socketURL: 'http://localhost:4000',
+    host:'http://localhost:3000',
+    socketURL: 'http://localhost:5000',
     modules: {
         socketService: {
             port: 5000,

@@ -47,7 +47,7 @@ function _getProjectFromModulesRequest(req) {
                     Object.assign(innerQuery, {developerKey: req.headers['rodin-key']});
                 }
                 else if (_.indexOf(allowedHosts, req.headers.host) < 0) {
-                    if (!req.headers.referer) return null;
+                    if (!req.headers.referer) return resolve(null);
                     const refererPath = URL.parse(req.headers.referer).path.split('/');
                     const projectRoot = refererPath.length == 1 ?
                         refererPath[0] :
@@ -466,8 +466,6 @@ function serverFile(req) {
     //console.log('sereFile', req);
 
     req.modules = req.body.modules || req.modules;
-
-    console.log(req.modules);
 
     let content = '';
     if (!req.modules || req.modules.length <= 0) {

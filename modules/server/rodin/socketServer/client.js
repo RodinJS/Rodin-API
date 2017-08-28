@@ -74,7 +74,7 @@ class RodinSocket {
             this.ns = response.data.ns;
             this.host = params.host;
             debug('NS SETTINGS', [this.ns, params, this.host]);
-            this.Socket = io(`http://localhost:5000/${this.ns}`, {
+            this.Socket = io(`{socketURL}/${this.ns}`, {
                 query: data,
                 resource: "socket.io"
                 //transports: ['websocket', 'polling']
@@ -218,7 +218,7 @@ class RodinSocket {
     }
 
     subscribe() {
-        const url = `${params.host}/socket-server/subscribe`;
+        const url = `{subscriptionURL}/api/socket-server/subscribe`;
         const method = 'POST';
         return new Promise((resolve, reject) => {
             const req = new XMLHttpRequest();
