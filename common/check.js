@@ -92,7 +92,7 @@ function isGod(req) {
 
 function project(req) {
     return new Promise((resolve, reject) => {
-        const projectID = req.query.id || req.params.id;
+        const projectID = req.query.id || req.params.id || req.body.id;
         if (!projectID) return reject(`Provide project ID!`);
         Project.getOne(projectID, req.user.username)
             .then((project) => resolve({
@@ -106,7 +106,7 @@ function project(req) {
 
 function isProjectOwn(req) {
     return new Promise((resolve, reject) => {
-        Project.getOne(req.params.id || req.body.id, req.user.username)
+        Project.getOne(req.params.id || req.body.id || req.query.id, req.user.username)
             .then(project => resolve(project))
             .catch(err => {reject('Access to project denied!')})
     });
