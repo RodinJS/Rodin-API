@@ -64,7 +64,7 @@ function _checkIfDomainExistsRedis(domain) {
 
 function add(req) {
 	return new Promise((resolve, reject) => {
-		if (_.isUndefined(req.body.id || req.params.id)) {
+		if (_.isUndefined(req.body.id || req.params.id || req.query.id)) {
 			return reject(Response.onError(null, `Project id does not provided!`, 400));
 		}
 
@@ -84,7 +84,7 @@ function add(req) {
 					return reject(Response.onError(null, `Domain/Subdomain is reserved!`, 400));
 				} else {
 					const username = req.user.username;
-					const id = utils.cleanUrl(req.body.id || req.params.id);
+					const id = utils.cleanUrl(req.body.id || req.params.id || req.query.id);
 
 					Project.getOne(id, username)
 						.then((project) => {
@@ -118,7 +118,7 @@ function add(req) {
 
 function remove(req) {
 	return new Promise((resolve, reject) => {
-		if (_.isUndefined(req.body.id || req.params.id)) {
+		if (_.isUndefined(req.body.id || req.params.id || req.query.id)) {
 			return reject(Response.onError(null, `Project id does not provided!`, 400));
 		}
 
@@ -133,7 +133,7 @@ function remove(req) {
 		}
 
 		const username = req.user.username;
-		const id = utils.cleanUrl(req.body.id || req.params.id);
+		const id = utils.cleanUrl(req.body.id || req.params.id || req.query.id);
 
 		Project.getOne(id, username)
 			.then((project) => {
