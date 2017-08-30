@@ -64,7 +64,7 @@ function ifTokenValid(req) {
 function ifSelfUpdate(req, res, next) {
     return new Promise((resolve, reject) => {
         if (req.user.username !== req.params.username) {
-            return reject(Response.onError(null, `Access to update denied!`, 401));
+            return reject(Response.onError(null, `Access to update denied!`, 400));
         }
         return resolve(true);
     });
@@ -87,7 +87,7 @@ function isGod(req) {
        jwt.verify(token, config.jwtSecret, function (err, decoded) {
            if (err) return reject(`You are not authenticated!`);
            if(decoded.role === 'God') return resolve(true);
-           return reject(Response.onError(null, `You are not authorized to perform this operation!`, 401));
+           return reject(Response.onError(null, `You are not authorized to perform this operation!`, 400));
        });
    })
 }
@@ -102,7 +102,7 @@ function project(req) {
                 root: project.root,
                 displayName: project.displayName,
             }))
-            .catch(err => reject(Response.onError(null, `Access to project denied!`, 401)))
+            .catch(err => reject(Response.onError(null, `Access to project denied!`, 400)))
     });
 }
 
@@ -110,7 +110,7 @@ function isProjectOwn(req) {
     return new Promise((resolve, reject) => {
         Project.getOne(req.params.id || req.body.id || req.query.id, req.user.username)
             .then(project => resolve(project))
-            .catch(err => reject(Response.onError(null, `Access to project denied!`, 401)))
+            .catch(err => reject(Response.onError(null, `Access to project denied!`, 400)))
     });
 }
 
