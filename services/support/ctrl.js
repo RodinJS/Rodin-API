@@ -43,7 +43,7 @@ const defaultParams = {
 const mappers = {
     pickerParams: ['id', 'threadCount', 'subject', 'status', 'preview', 'createdAt', 'modifiedAt', 'user', 'tags', 'threads', 'rating'],
 
-    conversation(data, username){
+    conversation(data, username) {
         return new Promise((resolve, reject) => {
             Q.all(_.map(data.items, (conversation, key) => {
                 const options = {
@@ -54,21 +54,21 @@ const mappers = {
                 return _submit(options);
             }))
                 .then(responses => {
-                    const items = _.map(responses, (data) => this.singleConversation(data.item, false. username));
-                    data.items = _.sortBy(items, (item) =>  - new Date(item.createdAt));
+                    const items = _.map(responses, (data) => this.singleConversation(data.item, false.username));
+                    data.items = _.sortBy(items, (item) => -new Date(item.createdAt));
                     return resolve(data);
                 })
                 .catch(err => reject(err));
         })
     },
 
-    singleConversation(conversation, getThreads = true, username){
+    singleConversation(conversation, getThreads = true, username) {
         let pickerParams = _.clone(this.pickerParams);
-        conversation.threads = _.map(conversation.threads, (thread, key) => {
+        conversation.threads = _.sortBy(_.map(conversation.threads, (thread, key) => {
             thread.createdBy = _.pick(thread.createdBy, ['firstName', 'lastName', 'email', 'photoUrl']);
             thread = _.pick(thread, ['body', 'createdBy', 'createdAt', 'id']);
             return thread;
-        });
+        }), (thread)=> new Date(thread.createdAtxw));
         conversation.preview = _.last(conversation.threads).body;
 
         if (!getThreads) {
@@ -83,18 +83,18 @@ const mappers = {
         return conversation;
     },
 
-    mergeVotes(votes, conversations){
-        if(!votes || votes.length <= 0) return conversations;
-        if(conversations.items){
-            conversations.items =  _.map(conversations.items, (conversation)=>{
-               const vote = _.find(votes, (vote)=> vote.conversationId == conversation.id);
-               Object.assign(conversation, {voted:vote});
-               return conversation;
+    mergeVotes(votes, conversations) {
+        if (!votes || votes.length <= 0) return conversations;
+        if (conversations.items) {
+            conversations.items = _.map(conversations.items, (conversation) => {
+                const vote = _.find(votes, (vote) => vote.conversationId == conversation.id);
+                Object.assign(conversation, {voted: vote});
+                return conversation;
             });
         }
-        else{
-            const vote = _.find(votes, (vote)=> vote.conversationId == conversations.id);
-            Object.assign(conversations, {voted:vote});
+        else {
+            const vote = _.find(votes, (vote) => vote.conversationId == conversations.id);
+            Object.assign(conversations, {voted: vote});
         }
         return conversations;
     }
@@ -126,12 +126,12 @@ function _initThreadParams(method, req) {
     return data;
 }
 
-function _initUpdateThread(req){
+function _initUpdateThread(req) {
     const data = {
         url: `https://api.helpscout.net/v1/conversations/${req.params.conversationId}/threads/${req.body.threadId}.json`,
         method: 'PUT',
         body: {
-            body:req.body.description
+            body: req.body.description
         }
     };
     Object.assign(data, defaultParams);
@@ -262,16 +262,12 @@ function _submit(options) {
 }
 
 function _initVoting(req, response, mailbox) {
-
     return new Promise((resolve) => {
-        const allowingVotes = [0, 1, -1, 2, -2];
-        if (!req.body.vote) return resolve(false);
+        const allowingVotes = [0, 1, -1];
         if (_.indexOf(allowingVotes, parseInt(req.body.vote)) < 0) return resolve(false);
         HelpScoutVote.get(req.user.username, req.params.id)
             .then(vote => {
-
                 let voted = parseInt(req.body.vote);
-
                 if (!vote) {
                     const Vote = new HelpScoutVote({
                         username: req.user.username,
@@ -285,12 +281,46 @@ function _initVoting(req, response, mailbox) {
                             return resolve(false)
                         })
                 }
+
                 if (vote.vote == voted) return resolve(false);
+
+                let resultValue = 0;
+                let upvoted = req.body.voteType === 1;
+                if (upvoted) {
+                    switch (vote.vote) {
+                        case 0:
+                            resultValue = 1;
+                            break;
+                        case 1:
+                            resultValue = -1;
+                            break;
+                        case -1:
+                            resultValue = 2;
+                            break;
+                        default:
+                            resultValue = 0;
+                            break
+                    }
+                } else if (!upvoted ) {
+                    switch (vote.vote) {
+                        case 0:
+                            resultValue = -1;
+                            break;
+                        case 1:
+                            resultValue = -2;
+                            break;
+                        case -1:
+                            resultValue = 1;
+                            break;
+                        default:
+                            resultValue = 0;
+                            break
+                    }
+                }
                 vote.vote = voted;
                 vote.save()
-                    .then(saved => resolve(handleVote(voted)))
+                    .then(saved => resolve(handleVote(resultValue)))
                     .catch(err => {
-                        console.log('err', err);
                         return resolve(false)
                     })
 
@@ -394,10 +424,12 @@ function createQuestionThread(req) {
 
 function updateQuestionThread(req) {
     return new Promise((resolve, reject) => {
-        if(!req.body.threadId) return reject(Response.onError(null, `Provide thread id`, 400));
-        if(!req.body.description) return reject(Response.onError(null, `Provide description`, 400));
-        const findThread = _.find(req.conversation.threads, (thread)=> thread.id == req.body.threadId && thread.createdBy.email == req.user.email);
-        if(!findThread) return reject(Response.onError(null, `invalid thread`, 400));
+        if (!req.body.threadId) return reject(Response.onError(null, `Provide thread id`, 400));
+        if (!req.body.description) return reject(Response.onError(null, `Provide description`, 400));
+        console.log(req.body.threadId)
+        console.log(req.conversation)
+        const findThread = _.find(req.conversation.threads, (thread) => thread.id == req.body.threadId && thread.createdBy.email == req.user.email);
+        if (!findThread) return reject(Response.onError(null, `invalid thread`, 400));
         const threadParams = _initUpdateThread(req);
         _submit(threadParams)
             .then(response => resolve(`thread updated`))
@@ -502,31 +534,31 @@ function searchConversations(req) {
     })
 }
 
-function getUserVotedConversations(req){
-    return new Promise((resolve)=>{
-        if(!req.user) resolve(null);
+function getUserVotedConversations(req) {
+    return new Promise((resolve) => {
+        if (!req.user) resolve(null);
         HelpScoutVote.list(req.user.username)
             .then(resolve)
-            .catch(err=> resolve(null));
+            .catch(err => resolve(null));
     })
 }
 
-function deleteConversation(req){
-   return new Promise((resolve, reject)=>{
-       const conversationId = req.params.conversationId || req.params.id;
-       if (_.isUndefined(conversationId)) return reject(Response.onError(null, `Provide conversation id`, 400));
-       const options = {
-           url: `https://api.helpscout.net/v1/conversations/${conversationId}.json`,
-           method: 'DELETE',
-           auth: {
-               'user': apiKey,
-               'pass': 'X'
-           },
-       };
-       return _submit(options)
-           .then(response => resolve('Conversation deleted'))
-           .catch(err => reject(Response.onError(err, `Bad request`, 400)))
-   })
+function deleteConversation(req) {
+    return new Promise((resolve, reject) => {
+        const conversationId = req.params.conversationId || req.params.id;
+        if (_.isUndefined(conversationId)) return reject(Response.onError(null, `Provide conversation id`, 400));
+        const options = {
+            url: `https://api.helpscout.net/v1/conversations/${conversationId}.json`,
+            method: 'DELETE',
+            auth: {
+                'user': apiKey,
+                'pass': 'X'
+            },
+        };
+        return _submit(options)
+            .then(response => resolve('Conversation deleted'))
+            .catch(err => reject(Response.onError(err, `Bad request`, 400)))
+    })
 }
 
 
