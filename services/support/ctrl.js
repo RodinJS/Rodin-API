@@ -64,11 +64,11 @@ const mappers = {
 
     singleConversation(conversation, getThreads = true, username){
         let pickerParams = _.clone(this.pickerParams);
-        conversation.threads = _.map(conversation.threads, (thread, key) => {
+        conversation.threads = _.sortBy(_.map(conversation.threads, (thread, key) => {
             thread.createdBy = _.pick(thread.createdBy, ['firstName', 'lastName', 'email', 'photoUrl']);
             thread = _.pick(thread, ['body', 'createdBy', 'createdAt', 'id']);
             return thread;
-        });
+        }), (thread)=> new Date(thread.createdAtxw));
         conversation.preview = _.last(conversation.threads).body;
 
         if (!getThreads) {
