@@ -26,11 +26,8 @@ client.on('error', err => {
 }); 
 
 let get = (key) => {
-	console.log('Redis key get: ', key)
 	return new Promise((resolve, reject) => {
-		console.log('Redis key get: promise in', key)
 		client.get(key, (err, reply) => {
-			console.log('Redis key get: client in', key)
 			if(err || reply === null) {
 				console.log('get error: ', err, reply);
 				return resolve(false);
@@ -43,7 +40,6 @@ let get = (key) => {
 }
 
 let set = (key, value, exp = null) => {
-	console.log('Redis key value set: ', key, value)
 	return new Promise((resolve, reject) => {
 		if(exp === null) {
 			client.set(key, value, (err, reply) => {
@@ -70,7 +66,6 @@ let set = (key, value, exp = null) => {
 }
 
 let remove = (key) => {
-	console.log('Redis key delete: ', key)
 	return new Promise((resolve, reject) => {
 		client.del(key, (err, reply) => {
 			if(err || reply === null) {
