@@ -68,22 +68,26 @@ const disabledDomains = _.reduce(domainName, (acc, domain, key) => {
 function _checkIfDomainExistsRedis(domain) {
 	return new Promise((resolve, reject) => {
 		redis.get(domain)
-			.then(replay => { return resolve((replay) ? true : false)})
+			.then(replay => { return resolve((replay) ? replay : false)})
 			.catch(e => { console.log(e); reject(Response.onError(e, `Can't check domain/subdomain availability status.`, 400)); });
 	})
 }
 
 function add(req) {
 	return new Promise((resolve, reject) => {
-		if (_.isUndefined(req.body.id || req.params.id || req.query.id)) {
+
+		let id_raw = req.body.id || req.params.id || req.query.id;
+		let domain_raw = req.body.domain || req.params.domain || req.query.domain;
+
+		if (_.isUndefined(id_raw)) {
 			return reject(Response.onError(null, `Project id does not provided!`, 400));
 		}
 
-		if (_.isUndefined(req.body.domain)) {
+		if (_.isUndefined(domain_raw)) {
 			return reject(Response.onError(null, `Domain/Subdomain name does not provided!`, 400));
 		}
 
-		const domain = utils.cleanUrl(req.body.domain.replace(/^www./, ''));
+		const domain = utils.cleanUrl(domain_raw.replace(/^www./, ''));
 
 		if (_.indexOf(disabledDomains, domain) >= 0) {
 			return reject(Response.onError(null, `Domain/Subdomain is reserved!`, 400));
@@ -95,7 +99,7 @@ function add(req) {
 					return reject(Response.onError(null, `Domain/Subdomain is reserved!`, 400));
 				} else {
 					const username = req.user.username;
-					const id = utils.cleanUrl(req.body.id || req.params.id || req.query.id);
+					const id = utils.cleanUrl(id_raw);
 
 					Project.getOne(id, username)
 						.then((project) => {
@@ -129,51 +133,44 @@ function add(req) {
 
 function remove(req) {
 	return new Promise((resolve, reject) => {
-		if (_.isUndefined(req.body.id || req.params.id || req.query.id)) {
+
+		let id_raw = req.body.id || req.params.id || req.query.id;
+		let domain_raw = req.body.domain || req.params.domain || req.query.domain;
+
+		if (_.isUndefined(id_raw)) {
 			return reject(Response.onError(null, `Project id does not provided!`, 400));
 		}
 
-		if (_.isUndefined(req.body.domain)) {
+		if (_.isUndefined(domain_raw)) {
 			return reject(Response.onError(null, `Domain/Subdomain name does not provided!`, 400));
 		}
 
-		const domain = utils.cleanUrl(req.body.domain.replace(/^www./, ''));
+		const domain = utils.cleanUrl(domain_raw.replace(/^www./, ''));
 
 		if (_.indexOf(disabledDomains, domain) >= 0) {
 			return reject(Response.onError(null, `Wrong Domain/Subdomain!---`, 400));
 		}
 
 		const username = req.user.username;
-		const id = utils.cleanUrl(req.body.id || req.params.id || req.query.id);
+		const id = utils.cleanUrl(id_raw);
 
 		Project.getOne(id, username)
 			.then((project) => {
+				let gago =  project.toObject()
 				if (!project) return reject(Response.onError(null, `Project is empty`, 404));
-				if (!project.domain) return reject(Response.onError(null, `Wrong Domain/Subdomain!-`, 400));
-				if (project.domain !== domain) return reject(Response.onError(null, `Wrong Domain/Subdomain!--`, 400));
 
 				_checkIfDomainExistsRedis(domain)
 					.then(replay => {
 						if (!replay) {
 							return reject(Response.onError(null, `Wrong Domain/Subdomain!++`, 400));
 						} else {
-							Project.findOneAndUpdateAsync({
-									_id: id,
-									owner: username,
-								},
-								{
-									$set: {
-										domain: '',
-									},
-								},
-								{
-									new: true,
-								}).then(projData => {
-									redis.remove(domain)
-										.then(deleted => { return ((deleted) ? resolve({message: `${domain} domain/subdomain name unlinked successfully!`}) : reject({message: `Error during ${domain} domain deletion.`})) })
-										.catch((e) => reject(Response.onError(e, `Can't update custom domain/subdomain.`, 400)));
-								})
-								.catch((e) => reject(Response.onError(e, `Can't update DB`, 400)));
+							if(replay == `${username}/${project.root}`) {
+								redis.remove(domain)
+									.then(deleted => { return ((deleted) ? resolve({message: `${domain} domain/subdomain name unlinked successfully!`}) : reject({message: `Error during ${domain} domain deletion.`})) })
+									.catch((e) => reject(Response.onError(e, `Can't update custom domain/subdomain.`, 400)));
+							} else {
+								return reject(Response.onError(null, `Wrong Domain/Subdomain!++___`, 400));
+							}
 						}
 					})
 					.catch(e => { return reject(Response.onError(null, `Wrong Domain/Subdomain!-----`, 400)); });

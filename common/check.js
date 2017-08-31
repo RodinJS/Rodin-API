@@ -12,8 +12,6 @@ const userCapacity  = require('./directorySize');
 const utils = require('./utils');
 const Response = require('./servicesResponses');
 
-// return reject(Response.onError(null, ``, 400)
-
 function _getUser(decoded){
     return new Promise((resolve, reject)=>{
         User.get(decoded.username)
