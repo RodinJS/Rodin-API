@@ -3,22 +3,30 @@
  */
 
 const gulp = require('gulp');
-const gulpLoadPlugins  = require('gulp-load-plugins');
+const gulpLoadPlugins = require('gulp-load-plugins');
 const path = require('path');
 const del = require('del');
 const runSequence = require('run-sequence');
 const isparta = require('isparta');
 const apidoc = require('gulp-apidoc');
 const babelCompiler = require('babel-core/register');
+const iife = require("gulp-iife");
+const foreach = require('gulp-foreach');
 const exec = require('child_process').exec;
+const insert = require('gulp-insert');
+const fs = require('fs');
+const concat = require('gulp-concat');
+const config = require('./config/env');
+
 
 const plugins = gulpLoadPlugins();
 const testPath = './server/tests/';
 const paths = {
-    js: ['./**/*.js', '!services/**', '!modules/**', '!models/**' , '!common/**', '!dist/**', '!tests/**', '!projects/**', '!publish/**', '!public/**', '!node_modules/**', '!coverage/**', '!history/**', '!resources/**'],
+    js: ['./**/*.js', '!services/**', '!modules/**', '!models/**', '!common/**', '!dist/**', '!tests/**', '!projects/**', '!publish/**', '!public/**', '!node_modules/**', '!coverage/**', '!history/**', '!resources/**'],
     nonJs: ['./package.json', './.gitignore'],
     tests: './tests/*.js',
     singleTestFile: ['' + testPath + '1.user.test.js', `${testPath}2.projects.test.js`, `${testPath}7.modules.test.js`, '' + testPath + '99.removeUser.test.js'],
+    modulesClient: ['./modules/client/rodin/**/*.js'],
 };
 const microServices = {auth: null, user: null};
 
@@ -27,7 +35,7 @@ const options = {
     codeCoverage: {
         reporters: ['lcov', 'text-summary'],
         thresholds: {
-            global: { statements: 80, branches: 80, functions: 80, lines: 80 },
+            global: {statements: 80, branches: 80, functions: 80, lines: 80},
         },
     },
 };
@@ -74,7 +82,7 @@ gulp.task('copy', () =>
 );
 
 
-gulp.task('start:microservices',  (cb) => {
+gulp.task('start:microservices', (cb) => {
     // The magic happens here ...
     microServices.auth = exec('node ./services/auth/index.js');
     microServices.user = exec('node ./services/user/index.js');
@@ -103,7 +111,7 @@ gulp.task('pre-test', () =>
 // triggers mocha test with code coverage
 gulp.task('test', ['pre-test', 'set-env', 'start:microservices'], () => {
     let reporters;
-    let	exitCode = 0;
+    let exitCode = 0;
 
     if (plugins.util.env['code-coverage-reporter']) {
         reporters = [...options.codeCoverage.reporters, plugins.util.env['code-coverage-reporter']];
@@ -111,7 +119,7 @@ gulp.task('test', ['pre-test', 'set-env', 'start:microservices'], () => {
         reporters = options.codeCoverage.reporters;
     }
 
-    return gulp.src([paths.tests], { read: false })
+    return gulp.src([paths.tests], {read: false})
         .pipe(plugins.plumber())
         .pipe(plugins.mocha({
             reporter: plugins.util.env['mocha-reporter'] || 'spec',
@@ -147,9 +155,9 @@ gulp.task('test', ['pre-test', 'set-env', 'start:microservices'], () => {
 // run single test
 gulp.task('singletest', ['set-env'], () => {
     let reporters;
-    let	exitCode = 0;
+    let exitCode = 0;
 
-    return gulp.src([...paths.singleTestFile], { read: false })
+    return gulp.src([...paths.singleTestFile], {read: false})
         .pipe(plugins.mocha({
             reporter: plugins.util.env['mocha-reporter'] || 'spec',
             ui: 'bdd',
@@ -183,4 +191,37 @@ gulp.task('default', ['clean'], () => {
     runSequence(
         ['copy', 'babel']
     );
+});
+
+gulp.task('moduleCompiler', () => {
+
+    return gulp.src(paths.modulesClient)
+        .pipe(foreach((stream, file) => {
+            const fileArr = file.path.split('/');
+            const folderName = fileArr[fileArr.length - 1] == 'socket.io.js' ? fileArr[fileArr.length - 3] : fileArr[fileArr.length - 2];
+            console.log('folderName', folderName);
+            return stream
+                .pipe(plugins.babel({
+                    presets: ['es2015'],
+                    //plugins:["transform-es2015-modules-systemjs"]
+                }))
+                .pipe(iife({
+                    useStrict: false,
+                    trimCode: false,
+                    prependSemicolon: false,
+                    bindThis: true,
+                }))
+                .pipe(insert.transform((contents, file) => {
+                    switch(folderName){
+                        case 'socketServer' :
+                            contents  = contents.replace(`{socketURL}`, config.socketURL)
+                                                .replace(`{subscriptionURL}`, config.host);
+                            //dependencie = fs.readFileSync(`${__dirname}/node_modules/socket.io-client/dist/socket.io.min.js`, 'utf8');
+                            break;
+                    }
+
+                    return  `${contents}`;
+                }))
+                .pipe(gulp.dest(`publicModules/rodin`));
+        }));
 });

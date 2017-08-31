@@ -61,7 +61,10 @@ function _getProjectFromModulesRequest(req) {
                 }
                 return resolve(Project.get(innerQuery))
             })
-            .catch(reject)
+            .catch(err=>{
+                console.log('err', err);
+                return reject(err);
+            })
     })
 }
 
@@ -206,14 +209,13 @@ function approveReject(req) {
         const moduleDir = `${moduleGlobalDir}${module.url}`;
         const indexFile = `${moduleDir}/client.js`;
 
-        const closureCompiler = new ClosureCompiler({
-            js: indexFile,
-            compilation_level: 'SIMPLE',
-        });
-
-
-        babel.transformFile(indexFile, { presets: ['es2015']},  (err, result) => {
-            //result.code
+        babel.transformFile(indexFile, {
+            presets: ['es2015'],
+            plugins: [
+                //"transform-es2015-modules-systemjs",
+                //"transform-class-properties"
+            ]
+        },  (err, result) => {
 
             const publicModulesDir = `${config.stuff_path}publicModules/users/`;
             const publicModuleDir = `${publicModulesDir}${module.url}`;
@@ -469,7 +471,7 @@ function serverFile(req) {
 
     let content = '';
     if (!req.modules || req.modules.length <= 0) {
-        content += `var error = '${req.error || 'No assigned modules'}';\n throw new Error(error);`;
+        content += `console.log('No external modules detected')`;
     }
     else{
         _.each(req.modules, (moduleData, key)=>{
@@ -486,6 +488,10 @@ function serverFile(req) {
         });
     }
     return content;
+}
+
+function serveEmptyFile(req){
+    return  `console.log('No external modules detected')`;
 }
 
 module.exports = {
@@ -506,5 +512,6 @@ module.exports = {
     unsubscribe,
     assignToProject,
     serverFile,
-    validateModules
+    validateModules,
+    serveEmptyFile
 };

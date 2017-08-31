@@ -27,7 +27,6 @@ const mailboxes = {
         name: 'features',
         voteId: 3776
     }
-
 };
 const defaultParams = {
     headers: {
