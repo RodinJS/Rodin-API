@@ -68,8 +68,8 @@ const disabledDomains = _.reduce(domainName, (acc, domain, key) => {
 function _checkIfDomainExistsRedis(domain) {
 	return new Promise((resolve, reject) => {
 		redis.get(domain)
-			.then(replay => { return resolve((replay) ? replay : false)})
-			.catch(e => { console.log(e); reject(Response.onError(e, `Can't check domain/subdomain availability status.`, 400)); });
+			.then(replay => resolve((replay) ? replay : false))
+			.catch(e => { console.log(e); return reject(Response.onError(e, `Can't check domain/subdomain availability status.`, 400)); });
 	})
 }
 
@@ -90,36 +90,47 @@ function add(req) {
 		const domain = utils.cleanUrl(domain_raw.replace(/^www./, ''));
 		const username = req.user.username;
 		const id = utils.cleanUrl(id_raw);
-		let static_path = '';
 
 		if (_.indexOf(disabledDomains, domain) >= 0) {
 			return reject(Response.onError(null, `Domain/Subdomain is reserved!`, 400));
 		}
 
 		_checkIfDomainExistsRedis(domain)
-			.then(replay => ((replay) ? reject(Response.onError(null, `Domain/Subdomain is reserved!`, 400)) : Project.getOne(id, username)))
-			.then(project => {
-				if (!project) return reject(Response.onError(null, `Project is empty`, 404));
+			.then(replay => {
+				let static_path = '';
+				Project.getOne(id, username)
+					.then(project => {
+						static_path = `${username}/${project.root}`;
 
-				static_path = `${username}/${project.root}`;
-				
-				if (project.domain) {
-					redis.remove(project.domain)
-						.then(deleted => { 
-							if(deleted) {
-								return Project.findOneAndUpdateAsync({_id: id, owner: username}, {$set: {domain: domain}}, {new: true});
+						if (!project) return reject(Response.onError(null, `Project is empty`, 404));
+
+						if(replay) {
+							if(replay !== static_path) {
+								return reject(Response.onError(null, `Domain/Subdomain is reserved!`, 400));
 							} else {
-								return reject({message: `Error during ${domain} domain/subdomain update!`}) 
+								return reject(Response.onError(null, `The specified domain/subdomain is active!`, 400))
 							}
-						})
-						.catch(e => reject(Response.onError(e, `Can't update custom domain/subdomain!`, 400)));
-				} else {
-					return Project.findOneAndUpdateAsync({_id: id, owner: username}, {$set: {domain: domain}}, {new: true});
-				}
+						}
+						
+						if (project.domain) {
+							redis.remove(project.domain)
+								.then(deleted => { 
+									if(deleted) {
+										return Project.findOneAndUpdateAsync({_id: id, owner: username}, {$set: {domain: domain}}, {new: true});
+									} else {
+										return reject({message: `Error during ${domain} domain/subdomain update!`}) 
+									}
+								})
+								.catch(e => reject(Response.onError(e, `Can't update custom domain/subdomain!`, 400)));
+						} else {
+							return Project.findOneAndUpdateAsync({_id: id, owner: username}, {$set: {domain: domain}}, {new: true});
+						}
+					})
+					.then(projData => redis.set(domain, static_path))
+					.then(created => ((created) ? resolve({message: `${domain} domain/subdomain name added to project successfuly!`}) : reject({message: `Error during ${domain} domain addition.`})))
+					.catch(e => {console.log(e); return reject(Response.onError(null, `Can't check Domain/Subdomain status! Please contact to support@rodin.io!`, 400)); });
 			})
-			.then(projData => redis.set(domain, static_path))
-			.then(created => ((created) ? resolve({message: `${domain} domain/subdomain name added to project successfuly!`}) : reject({message: `Error during ${domain} domain addition.`})))
-			.catch(e => reject(Response.onError(null, `Can't check Domain/Subdomain status! Please contact to support@rodin.io`, 400)));
+			.catch(e => {console.log(e); return reject(Response.onError(null, `Can't check Domain/Subdomain status! Please contact to support@rodin.io`, 400)); });
 	})
 }
 
@@ -153,9 +164,11 @@ function remove(req) {
 				_checkIfDomainExistsRedis(domain)
 					.then(replay => {
 						if (!replay) {
+							console.log("-----replay  ",replay);
 							return reject(Response.onError(null, `Wrong Domain/Subdomain!++`, 400));
 						} else {
 							if(replay == `${username}/${project.root}`) {
+								console.log("-----replay2  ",replay);
 								redis.remove(domain)
 									.then(deleted => { return ((deleted) ? resolve({message: `${domain} domain/subdomain name unlinked successfully!`}) : reject({message: `Error during ${domain} domain deletion.`})) })
 									.catch((e) => reject(Response.onError(e, `Can't update custom domain/subdomain.`, 400)));
