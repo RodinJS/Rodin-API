@@ -164,11 +164,9 @@ function remove(req) {
 				_checkIfDomainExistsRedis(domain)
 					.then(replay => {
 						if (!replay) {
-							console.log("-----replay  ",replay);
 							return reject(Response.onError(null, `Wrong Domain/Subdomain!++`, 400));
 						} else {
 							if(replay == `${username}/${project.root}`) {
-								console.log("-----replay2  ",replay);
 								redis.remove(domain)
 									.then(deleted => { return ((deleted) ? resolve({message: `${domain} domain/subdomain name unlinked successfully!`}) : reject({message: `Error during ${domain} domain deletion.`})) })
 									.catch((e) => reject(Response.onError(e, `Can't update custom domain/subdomain.`, 400)));
