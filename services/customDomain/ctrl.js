@@ -68,8 +68,8 @@ const disabledDomains = _.reduce(domainName, (acc, domain, key) => {
 function _checkIfDomainExistsRedis(domain) {
 	return new Promise((resolve, reject) => {
 		redis.get(domain)
-			.then(replay => { return resolve((replay) ? replay : false)})
-			.catch(e => { console.log(e); reject(Response.onError(e, `Can't check domain/subdomain availability status.`, 400)); });
+			.then(replay => resolve((replay) ? replay : false))
+			.catch(e => { console.log(e); return reject(Response.onError(e, `Can't check domain/subdomain availability status.`, 400)); });
 	})
 }
 
@@ -88,6 +88,8 @@ function add(req) {
 		}
 
 		const domain = utils.cleanUrl(domain_raw.replace(/^www./, ''));
+		const username = req.user.username;
+		const id = utils.cleanUrl(id_raw);
 
 		if (_.indexOf(disabledDomains, domain) >= 0) {
 			return reject(Response.onError(null, `Domain/Subdomain is reserved!`, 400));
@@ -95,39 +97,40 @@ function add(req) {
 
 		_checkIfDomainExistsRedis(domain)
 			.then(replay => {
-				if (replay) {
-					return reject(Response.onError(null, `Domain/Subdomain is reserved!`, 400));
-				} else {
-					const username = req.user.username;
-					const id = utils.cleanUrl(id_raw);
+				let static_path = '';
+				Project.getOne(id, username)
+					.then(project => {
+						static_path = `${username}/${project.root}`;
 
-					Project.getOne(id, username)
-						.then((project) => {
-							if (!project) return reject(Response.onError(null, `Project is empty`, 404));
-							
-							Project.findOneAndUpdateAsync({
-									_id: id,
-									owner: username,
-								},
-								{
-									$set: {
-										domain: domain,
-									},
-								},
-								{
-									new: true,
-								}).then(projData => {
-									let static_path = `${username}/${projData.root}`
-									redis.set(domain, static_path)
-										.then(created => { return ((created) ? resolve({message: `${domain} domain/subdomain name added to project successfuly!`}) : reject({message: `Error during ${domain} domain addition.`})) })
-										.catch((e) => reject(Response.onError(e, `Can't update custom domain/subdomain.`, 404)));
+						if (!project) return reject(Response.onError(null, `Project is empty`, 404));
+
+						if(replay) {
+							if(replay !== static_path) {
+								return reject(Response.onError(null, `Domain/Subdomain is reserved!`, 400));
+							} else {
+								return reject(Response.onError(null, `The specified domain/subdomain is active!`, 400))
+							}
+						}
+						
+						if (project.domain) {
+							redis.remove(project.domain)
+								.then(deleted => { 
+									if(deleted) {
+										return Project.findOneAndUpdateAsync({_id: id, owner: username}, {$set: {domain: domain}}, {new: true});
+									} else {
+										return reject({message: `Error during ${domain} domain/subdomain update!`}) 
+									}
 								})
-								.catch((e) => reject(Response.onError(e, `Can't update DB`, 400)));
-						})
-						.catch((e) => reject(Response.onError(e, `Project not found`, 404)));
-				}
+								.catch(e => reject(Response.onError(e, `Can't update custom domain/subdomain!`, 400)));
+						} else {
+							return Project.findOneAndUpdateAsync({_id: id, owner: username}, {$set: {domain: domain}}, {new: true});
+						}
+					})
+					.then(projData => redis.set(domain, static_path))
+					.then(created => ((created) ? resolve({message: `${domain} domain/subdomain name added to project successfuly!`}) : reject({message: `Error during ${domain} domain addition.`})))
+					.catch(e => {console.log(e); return reject(Response.onError(null, `Can't check Domain/Subdomain status! Please contact to support@rodin.io!`, 400)); });
 			})
-			.catch(e => { return reject(Response.onError(null, `Domain/Subdomain is reserved!-`, 400)); });
+			.catch(e => {console.log(e); return reject(Response.onError(null, `Can't check Domain/Subdomain status! Please contact to support@rodin.io`, 400)); });
 	})
 }
 
@@ -156,7 +159,6 @@ function remove(req) {
 
 		Project.getOne(id, username)
 			.then((project) => {
-				let gago =  project.toObject()
 				if (!project) return reject(Response.onError(null, `Project is empty`, 404));
 
 				_checkIfDomainExistsRedis(domain)
