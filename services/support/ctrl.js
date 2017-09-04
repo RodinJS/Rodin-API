@@ -246,9 +246,11 @@ function _grabTags(data) {
         }, [])
         .groupBy('length')
         .map((items, name) => ({name: items[0], count: items.length}))
+        .sortBy("count")
+        .reverse()
         .value();
 
-    return allTags;
+    return allTags.splice(0, 8);
 }
 
 function _submit(options) {
