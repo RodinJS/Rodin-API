@@ -81,7 +81,14 @@ projectsResponder.on('get', (req, cb)=>{
             Object.assign(req, {user:user});
             return Ctrl.get(req);
         })
-        .then(response=> cb(null, response))
+        .then(response=> {
+            Object.assign(req, {project:response});
+            return Ctrl.getProjectSize(req)
+        })
+        .then(response => {
+            if(response) Object.assign(req.project, {projectSize:response});
+            return cb(null, req.project)
+        })
         .catch(err=> {
             console.log('project count err', err);
             return cb(err, null);
