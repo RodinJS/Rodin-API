@@ -374,15 +374,18 @@ function getQuestionsList(req) {
 function validateCustomer(req) {
     return new Promise((resolve, reject) => {
         const customerQuery = _initCustomerSearchParams(req);
+        console.log('customerQuery', customerQuery);
         const returnData = function (response) {
             return resolve(response.items[0]);
         };
         _submit(customerQuery)
             .then(response => {
+                console.log('ValdateCustomer', response);
                 if (response.items && response.items[0]) {
                     return returnData(response);
                 }
                 const customerParams = _initCustomerParams('POST', req);
+                console.log('customerParams', customerParams);
                 return _submit(customerParams)
                     .then(response => _submit(customerQuery))
                     .then(response => returnData(response))
