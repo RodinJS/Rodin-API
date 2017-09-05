@@ -390,9 +390,7 @@ function validateCustomer(req) {
                 return _submit(customerParams)
                     .then(response => {
                         console.log('response 1', response);
-                        setTimeout(()=>{
-                            return _submit(customerQuery);
-                        }, 2000);
+                        return _submit(customerQuery);
                     })
                     .then(response => {
                         console.log('response 2', response);
