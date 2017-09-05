@@ -390,7 +390,9 @@ function validateCustomer(req) {
                 return _submit(customerParams)
                     .then(response => {
                         console.log('response 1', response);
-                        return _submit(customerQuery);
+                        setTimeout(()=>{
+                            return _submit(customerQuery);
+                        }, 2000);
                     })
                     .then(response => {
                         console.log('response 2', response);
@@ -400,6 +402,7 @@ function validateCustomer(req) {
                         console.log('err', err);
                         return reject(Response.onError(err, `Bad request`, 400))
                     })
+
             })
             .catch(err => reject(Response.onError(err, `Bad request`, 400)))
 
