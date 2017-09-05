@@ -229,6 +229,7 @@ function _initCustomerParams(method, req) {
 
         body: {
             "firstName": req.user.username,
+            "lastName":req.user.username,
             "emails": [{
                 "value": req.user.email
             }]
@@ -376,19 +377,29 @@ function validateCustomer(req) {
         const customerQuery = _initCustomerSearchParams(req);
         console.log('customerQuery', customerQuery);
         const returnData = function (response) {
+            console.log('response', response);
             return resolve(response.items[0]);
         };
         _submit(customerQuery)
             .then(response => {
-                console.log('ValdateCustomer', response);
                 if (response.items && response.items[0]) {
                     return returnData(response);
                 }
                 const customerParams = _initCustomerParams('POST', req);
                 console.log('customerParams', customerParams);
                 return _submit(customerParams)
-                    .then(response => _submit(customerQuery))
-                    .then(response => returnData(response))
+                    .then(response => {
+                        console.log('response 1', response);
+                        return _submit(customerQuery);
+                    })
+                    .then(response => {
+                        console.log('response 2', response);
+                        return returnData(response)
+                    })
+                    .catch(err => {
+                        console.log('err', err);
+                        return reject(Response.onError(err, `Bad request`, 400))
+                    })
             })
             .catch(err => reject(Response.onError(err, `Bad request`, 400)))
 
