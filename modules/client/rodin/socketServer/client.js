@@ -1,20 +1,5 @@
+import io from "https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.4/socket.io.min.js";
 
-const scripts = document.getElementsByTagName('script');
-let index = scripts.length - 1;
-let myScript = scripts[index];
-const params = parseQuery(myScript.src.replace(/^[^\?]+\??/, ''));
-let Debug = 'debug' in params || false;
-
-
-function parseQuery(queryString) {
-    let query = {};
-    let a = (queryString[0] === '?' ? queryString.substr(1) : queryString).split('&');
-    for (let i = 0; i < a.length; i++) {
-        let b = a[i].split('=');
-        query[decodeURIComponent(b[0])] = decodeURIComponent(b[1] || '');
-    }
-    return query;
-}
 
 function toQueryString(paramsObject) {
     return Object
@@ -23,28 +8,21 @@ function toQueryString(paramsObject) {
         .join('&');
 }
 
-function debug(name, data, error) {
-    if (Debug) {
-        if (error)
-            return console.error(name, data);
-
-        return console.log(name, data);
-    }
+function addScript(src, callback) {
+    const s = document.createElement( 'script' );
+    s.setAttribute( 'src', src );
+    s.onload=callback;
+    document.body.appendChild( s );
 }
 
-/*
-if (!params.projectId) {
-    throw new Error('project id not provided')
-}
-*/
+export class SocketServer {
 
-
-class RodinSocket {
-
-    constructor(ns, host) {
+    constructor(){
+        this.host = `{subscriptionURL}/api`;
+        this.socketHost = `{socketURL}`;
         this.emitBuffer = {};
         this.listenerBuffer = {};
-        RodinSocket.disconnected = RodinSocket.disconnected.bind(this);
+        this.disconnected = this.disconnected.bind(this);
         this.onMessage = this.onMessage.bind(this);
         this.broadcastToAll = this.broadcastToAll.bind(this);
         this.subscribeToEvents = this.subscribeToEvents.bind(this);
@@ -64,17 +42,18 @@ class RodinSocket {
         this.mySocketId = this.mySocketId.bind(this);
         this.isMe = this.isMe.bind(this);
         this.validateSocketConnection = this.validateSocketConnection.bind(this);
+
     }
 
     connect(data) {
         data = toQueryString(data);
 
         this.subscribe().then((response) => {
-            console.log('response', response.data);
+            //console.log('response', response.data);
             this.ns = response.data.ns;
-            this.host = params.host;
-            debug('NS SETTINGS', [this.ns, params, this.host]);
-            this.Socket = io(`${this.host}/${this.ns}`, {
+            //console.log('NS SETTINGS', [this.ns, params, this.host]);
+            //console.log('io', io);
+            this.Socket = io(`${this.socketHost}/${this.ns}`, {
                 query: data,
                 resource: "socket.io"
                 //transports: ['websocket', 'polling']
@@ -86,7 +65,6 @@ class RodinSocket {
             this.emitBuffer = {};
             this.listenerBuffer = {};
         })
-
     }
 
     disconnect(){
@@ -105,13 +83,13 @@ class RodinSocket {
     subscribeToEvents() {
         this.Socket.on('connect', (socket) => this.connected(socket));
         this.Socket.on('subscribeToApp', this.subscribe);
-        this.Socket.on('disconnect', RodinSocket.disconnected);
+        this.Socket.on('disconnect', this.disconnected);
         //this.Socket.on('message', RodinSocket.onMessage);
-        this.Socket.on('onError', RodinSocket.onError);
+        this.Socket.on('onError', this.onError);
     }
 
     reconnect(){
-       this.Socket.connect();
+        this.Socket.connect();
     }
 
     connected(socket) {
@@ -132,7 +110,7 @@ class RodinSocket {
             }
             this.emitBuffer = {};
         }
-        debug('connected', socket);
+        console.log('connected', socket);
     }
 
     onConnected(cb){
@@ -142,8 +120,8 @@ class RodinSocket {
         cb(this.Socket.connected);
     }
 
-    static disconnected(err) {
-        debug('disconnected', err);
+    disconnected(err) {
+        console.warn('disconnected', err);
     }
 
     onMessage(eventName, cb) {
@@ -153,8 +131,8 @@ class RodinSocket {
         this.Socket.on(eventName, cb);
     }
 
-    static onError(data) {
-        debug('Socket Request error', data, true);
+    onError(data) {
+        console.error('Socket Request error', data);
     }
 
     broadcastToAll(name, param) {
@@ -217,8 +195,17 @@ class RodinSocket {
         }
     }
 
-    subscribe() {
-        const url = `${params.host}/socket-server/subscribe`;
+    validateSocketConnection(eventName, data) {
+        if (!this.Socket) {
+            this.emitBuffer[eventName] = data;
+            return false;
+        }
+        return true;
+    }
+
+
+    subscribe(params = {projectId:'gago'}){
+        const url = `${this.host}/socket-server/subscribe`;
         const method = 'POST';
         return new Promise((resolve, reject) => {
             const req = new XMLHttpRequest();
@@ -229,18 +216,4 @@ class RodinSocket {
             req.send(JSON.stringify(params));
         });
     }
-
-    validateSocketConnection(eventName, data) {
-        if (!this.Socket) {
-            this.emitBuffer[eventName] = data;
-            return false;
-        }
-        return true;
-    }
-
 }
-
-//export default RodinSocket;
-
-
-debug('PARAMS', params);

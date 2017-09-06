@@ -12,8 +12,6 @@ const userCapacity  = require('./directorySize');
 const utils = require('./utils');
 const Response = require('./servicesResponses');
 
-// return reject(Response.onError(null, ``, 400)
-
 function _getUser(decoded){
     return new Promise((resolve, reject)=>{
         User.get(decoded.username)
@@ -30,6 +28,7 @@ function _getUser(decoded){
                     'usernameConfirmed',
                     'stripe',
                     'projects',
+                    'notification'
                 ]));
                 Object.assign(data, {
                     creationDate: user.createdAt,
@@ -126,7 +125,7 @@ function validateStorage(req) {
         };
 
         const storageMaxCapacity = req.user.storageSize || storageSizes[role];
-        const rootDir = `projects/${req.user.username}`;
+        const rootDir = `${config.stuff_path}/projects/${req.user.username}`;
 
         userCapacity.readSizeRecursive(rootDir, (err, size) => {
             size = err ? 0 : size;

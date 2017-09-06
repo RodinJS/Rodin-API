@@ -17,7 +17,8 @@ const Response = require('../../common/servicesResponses');
 const Project = require('../../models/project');
 const ProjectTemplates = require('../../models/projectTemplate');
 const RDSendgrid = require('../../common/sendgrid');
-const transpiler = require('./transpiler')
+const transpiler = require('./transpiler');
+const userCapacity = require('../../common/directorySize');
 const sg = sendgrid('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');
 
 
@@ -81,8 +82,10 @@ function _validateGithubUrl(project, req) {
 }
 
 function _initTemplate(project, req, rootDir) {
+    console.log('req.body.templateId', req.body.templateId);
     ProjectTemplates.getOne(req.body.templateId)
         .then((templateProject) => {
+            console.log('templateProject', templateProject);
             if (!templateProject) {
                 fs.appendFileSync(`${rootDir}/error.log`, 'Template not exists' + '\n');
             }
@@ -96,15 +99,14 @@ function _initTemplate(project, req, rootDir) {
                 if (err) {
                     fs.appendFileSync(`${rootDir}/error.log`, err + '\n');
                 }
-                const query = {id: project._id, owner: req.user.username};
+                const query = {_id: project._id, owner: req.user.username};
                 const update = {
                     $set: {
                         updatedAt: new Date(),
                         templateOf: templateProject.name
                     }
                 };
-                Project.updateAsync(query, update)
-                    .then(projectUpdated => resolve(true))
+                Project.findOneAndUpdate(query, update)
                     .catch(err => {
                         fs.appendFileSync(`${rootDir}/error.log`, err + '\n');
                     });
@@ -149,7 +151,7 @@ function create(req) {
                     displayName: req.body.displayName,
                     description: req.body.description,
                     isNew: true,
-                    defaultThumbnail: req.body.defaultThumbnail
+                    defaultThumbnail: req.body.defaultThumbnail,
 
                 });
 
@@ -390,7 +392,9 @@ function publishProject(req) {
                             content: `${config.clientURL}/${req.user.username}/${req.project.name}`
                         }]
                     };
-                    RDSendgrid.send(req);
+                    if(req.user.notification){
+                        RDSendgrid.send(req);
+                    }
                     return resolve(project)
                 })
                 .catch((e) => reject(Response.onError(e, `Can't publish project`, 400)));
@@ -576,6 +580,17 @@ function generateDeveloperKey(req){
     })
 }
 
+function getProjectSize(req) {
+  return new Promise((resolve, reject)=>{
+      if (!req.query.projectSize) return resolve(0);
+      let rootDir = config.stuff_path + 'projects/' + req.user.username + '/' + req.project.root;
+      userCapacity.readSizeRecursive(rootDir, (err, size) => {
+          size = err ? 0 : size;
+          return resolve(utils.byteToMb(size))
+      });
+  })
+}
+
 module.exports = {
     create: create,
     list: list,
@@ -594,5 +609,6 @@ module.exports = {
     getTemplatesList: getTemplatesList,
     transpile: transpile,
     makePublic:makePublic,
-    generateDeveloperKey:generateDeveloperKey
+    generateDeveloperKey:generateDeveloperKey,
+    getProjectSize:getProjectSize
 };

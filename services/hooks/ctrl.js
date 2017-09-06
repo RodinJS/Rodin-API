@@ -72,20 +72,20 @@ function _sendEmail(req) {
             req.notification = `${appName} ${req.params.device} build complete`;
         }
 
-
-        RDSendgrid.send(req)
-            .then(mailSent => {
-                req.notification = {
-                    username: req.user.username,
-                    label: req.notification.error ? req.notification.error.message : req.notification,
-                    project: _.pick(req.project, ['_id', 'name']),
-                    error: req.notification.error || false,
-                    event: 'projectBuild',
-                };
-                notifications.create(req, false, false);
-                notifications.pushSocket(req);
-                return resolve(req.notification);
-            })
+        if(req.user.notification){
+            RDSendgrid.send(req)
+                .then(mailSent => {})
+        }
+        req.notification = {
+            username: req.user.username,
+            label: req.notification.error ? req.notification.error.message : req.notification,
+            project: _.pick(req.project, ['_id', 'name']),
+            error: req.notification.error || false,
+            event: 'projectBuild',
+        };
+        notifications.create(req, false, false);
+        notifications.pushSocket(req);
+        return resolve(req.notification);
     })
 }
 

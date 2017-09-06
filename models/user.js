@@ -159,6 +159,10 @@ const UserSchema = new mongoose.Schema({
     usernameConfirmed: {
         type: Boolean,
     },
+    notification: {
+        type: Boolean,
+        default:true
+    },
     stripe: {
         customerId: String,
         subscriptionId: String,
