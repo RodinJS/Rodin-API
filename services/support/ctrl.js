@@ -258,6 +258,10 @@ function _submit(options) {
     return new Promise((resolve, reject) => {
         request(options, (err, response, body) => {
             if (err || response.statusCode > 300) return reject(err || {code: response.statusCode, err: response.body});
+            if(response.headers.location){
+                if(!body) body = {};
+                Object.assign(body, {location:response.headers.location});
+            }
             return resolve(body);
         });
     })
@@ -375,9 +379,7 @@ function getQuestionsList(req) {
 function validateCustomer(req) {
     return new Promise((resolve, reject) => {
         const customerQuery = _initCustomerSearchParams(req);
-        console.log('customerQuery', customerQuery);
-        const returnData = function (response) {
-            console.log('response', response);
+        const returnData =  (response) => {
             return resolve(response.items[0]);
         };
         _submit(customerQuery)
@@ -386,15 +388,21 @@ function validateCustomer(req) {
                     return returnData(response);
                 }
                 const customerParams = _initCustomerParams('POST', req);
-                console.log('customerParams', customerParams);
                 return _submit(customerParams)
                     .then(response => {
-                        console.log('response 1', response);
-                        return _submit(customerQuery);
+                        const reqData = {
+                            url:response.location,
+                            method:'GET',
+                        };
+                        Object.assign(reqData, defaultParams);
+                        return _submit(reqData);
                     })
                     .then(response => {
-                        console.log('response 2', response);
-                        return returnData(response)
+                        //Wrap fucking helpscout data.
+                        response.item.emails[0] = response.item.emails[0].value;
+                        response.items = [response.item];
+                        delete response.item;
+                        return returnData(response);
                     })
                     .catch(err => {
                         console.log('err', err);
