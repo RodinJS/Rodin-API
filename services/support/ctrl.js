@@ -41,7 +41,7 @@ const defaultParams = {
 };
 
 const mappers = {
-    pickerParams: ['id', 'threadCount', 'subject', 'status', 'preview', 'createdAt', 'modifiedAt', 'user', 'tags', 'threads', 'rating'],
+    pickerParams: ['id', 'threadCount', 'subject', 'status', 'preview', 'createdAt', 'modifiedAt', 'user', 'tags', 'threads', 'rating', 'myThreadId'],
 
     conversation(data, username) {
         return new Promise((resolve, reject) => {
@@ -62,7 +62,7 @@ const mappers = {
         })
     },
 
-    singleConversation(conversation, getThreads = true, username) {
+    singleConversation(conversation, getThreads = true) {
         let pickerParams = _.clone(this.pickerParams);
         conversation.threads = _.sortBy(_.map(conversation.threads, (thread, key) => {
             thread.createdBy = _.pick(thread.createdBy, ['firstName', 'lastName', 'email', 'photoUrl']);
@@ -70,6 +70,7 @@ const mappers = {
             return thread;
         }), (thread)=> new Date(thread.createdAtxw));
         conversation.preview = _.last(conversation.threads).body;
+        conversation.myThreadId = _.last(conversation.threads).id;
 
         if (!getThreads) {
             pickerParams = _.remove(pickerParams, (param) => param !== 'threads');
@@ -426,9 +427,7 @@ function updateQuestionThread(req) {
     return new Promise((resolve, reject) => {
         if (!req.body.threadId) return reject(Response.onError(null, `Provide thread id`, 400));
         if (!req.body.description) return reject(Response.onError(null, `Provide description`, 400));
-        console.log(req.body.threadId)
-        console.log(req.conversation)
-        const findThread = _.find(req.conversation.threads, (thread) => thread.id == req.body.threadId && thread.createdBy.email == req.user.email);
+        const findThread = req.conversation.myThreadId == req.body.threadId;
         if (!findThread) return reject(Response.onError(null, `invalid thread`, 400));
         const threadParams = _initUpdateThread(req);
         _submit(threadParams)
