@@ -28,6 +28,7 @@ function _getUser(decoded){
                     'usernameConfirmed',
                     'stripe',
                     'projects',
+                    'notification'
                 ]));
                 Object.assign(data, {
                     creationDate: user.createdAt,
@@ -124,7 +125,7 @@ function validateStorage(req) {
         };
 
         const storageMaxCapacity = req.user.storageSize || storageSizes[role];
-        const rootDir = `projects/${req.user.username}`;
+        const rootDir = `${config.stuff_path}/projects/${req.user.username}`;
 
         userCapacity.readSizeRecursive(rootDir, (err, size) => {
             size = err ? 0 : size;

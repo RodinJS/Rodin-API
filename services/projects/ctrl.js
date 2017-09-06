@@ -392,7 +392,9 @@ function publishProject(req) {
                             content: `${config.clientURL}/${req.user.username}/${req.project.name}`
                         }]
                     };
-                    RDSendgrid.send(req);
+                    if(req.user.notification){
+                        RDSendgrid.send(req);
+                    }
                     return resolve(project)
                 })
                 .catch((e) => reject(Response.onError(e, `Can't publish project`, 400)));
