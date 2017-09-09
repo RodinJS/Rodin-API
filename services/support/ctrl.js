@@ -251,6 +251,7 @@ function _grabTags(data) {
         .reverse()
         .value();
 
+
     return allTags.splice(0, 8);
 }
 
@@ -553,7 +554,7 @@ function searchConversations(req) {
         const options = _initSearchParams(req);
         return _submit(options)
             .then(response => mappers.conversation(response))
-            .then(response => resolve(response))
+            .then(response => resolve(mappers.mergeVotes(req.votedConversations, response)))
             .catch(err => reject(Response.onError(err, `Bad request`, 400)))
     })
 }
