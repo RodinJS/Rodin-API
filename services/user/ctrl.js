@@ -222,7 +222,7 @@ function resetPassword(req) {
                     subject: 'Password reset request',
                     handleBars: [{
                         name: 'userName',
-                        content: userData.profile.firstName || userData.username,
+                        content: userData.username,
                     },
                         {
                             name: 'resetLink',
