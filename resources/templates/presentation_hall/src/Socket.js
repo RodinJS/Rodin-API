@@ -2,6 +2,8 @@ import * as RODIN from 'rodin/core';
 import {Character} from './Character.js';
 import {screen} from './Screen.js';
 import {initialPositions} from './initialPositions.js';
+import * as Modules from 'rodin/modules'
+
 
 /**
  * Creates an empty object for saving active users
@@ -27,7 +29,7 @@ function createNewCharacter(position, socketId) {
  * Create new Rodin socket
  * @type {RodinSocket}
  */
-const SS = new RodinSocket();
+const SS = new Modules.SocketServer();
 
 SS.connect({});
 
