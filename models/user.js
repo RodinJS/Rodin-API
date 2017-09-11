@@ -281,7 +281,13 @@ const Model = mongoose.model('User', UserSchema);
 /**
  * Migrations
  */
-Model.update({'notification': {$exists : false}}, {$set: {'notification': true}}, {multi: true}).exec();
+Model.update({'notification': {$exists : false}}, {$set: {'notification': true}}, {multi: true}).exec()
+    .then(response=>{
+        console.log('response', response);
+    })
+    .catch(err=>{
+        console.log('err', err);
+    })
 
 
 module.exports = Model;
