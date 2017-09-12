@@ -35,6 +35,7 @@ module.exports = {
         body: {
             email: Joi.string().optional(),
             username: Joi.string().optional(),
+            notification:Joi.boolean().optional(),
             profile: {
                 firstName: Joi.string().optional().allow(''),
                 lastName: Joi.string().optional().allow(''),

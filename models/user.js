@@ -6,7 +6,7 @@
 const Promise  =  require('bluebird');
 const mongoose = require('mongoose');
 const bcrypt =  require('bcrypt-nodejs');
-
+const _ = require('lodash');
 const httpStatus = require('../common/httpStatus');
 const APIError = require('../common/APIError');
 
@@ -159,6 +159,10 @@ const UserSchema = new mongoose.Schema({
     usernameConfirmed: {
         type: Boolean,
     },
+    notification: {
+        type: Boolean,
+        default:true
+    },
     stripe: {
         customerId: String,
         subscriptionId: String,
@@ -271,4 +275,19 @@ UserSchema.statics = {
 /**
  * @typedef User
  */
-module.exports = mongoose.model('User', UserSchema);
+const Model = mongoose.model('User', UserSchema);
+
+
+/**
+ * Migrations
+ */
+Model.update({'notification': {$exists : false}}, {$set: {'notification': true}}, {multi: true}).exec()
+    .then(response=>{
+        console.log('response', response);
+    })
+    .catch(err=>{
+        console.log('err', err);
+    })
+
+
+module.exports = Model;

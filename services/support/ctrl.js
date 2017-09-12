@@ -40,7 +40,7 @@ const defaultParams = {
 };
 
 const mappers = {
-    pickerParams: ['id', 'threadCount', 'subject', 'status', 'preview', 'createdAt', 'modifiedAt', 'user', 'tags', 'threads', 'rating'],
+    pickerParams: ['id', 'threadCount', 'subject', 'status', 'preview', 'createdAt', 'modifiedAt', 'user', 'tags', 'threads', 'rating', 'myThreadId'],
 
     conversation(data, username) {
         return new Promise((resolve, reject) => {
@@ -61,7 +61,7 @@ const mappers = {
         })
     },
 
-    singleConversation(conversation, getThreads = true, username) {
+    singleConversation(conversation, getThreads = true) {
         let pickerParams = _.clone(this.pickerParams);
         conversation.threads = _.sortBy(_.map(conversation.threads, (thread, key) => {
             thread.createdBy = _.pick(thread.createdBy, ['firstName', 'lastName', 'email', 'photoUrl']);
@@ -69,6 +69,7 @@ const mappers = {
             return thread;
         }), (thread)=> new Date(thread.createdAtxw));
         conversation.preview = _.last(conversation.threads).body;
+        conversation.myThreadId = _.last(conversation.threads).id;
 
         if (!getThreads) {
             pickerParams = _.remove(pickerParams, (param) => param !== 'threads');
@@ -229,6 +230,7 @@ function _initCustomerParams(method, req) {
 
         body: {
             "firstName": req.user.username,
+            "lastName":req.user.username,
             "emails": [{
                 "value": req.user.email
             }]
@@ -246,15 +248,22 @@ function _grabTags(data) {
         }, [])
         .groupBy('length')
         .map((items, name) => ({name: items[0], count: items.length}))
+        .sortBy("count")
+        .reverse()
         .value();
 
-    return allTags;
+
+    return allTags.splice(0, 8);
 }
 
 function _submit(options) {
     return new Promise((resolve, reject) => {
         request(options, (err, response, body) => {
             if (err || response.statusCode > 300) return reject(err || {code: response.statusCode, err: response.body});
+            if(response.headers.location){
+                if(!body) body = {};
+                Object.assign(body, {location:response.headers.location});
+            }
             return resolve(body);
         });
     })
@@ -372,7 +381,7 @@ function getQuestionsList(req) {
 function validateCustomer(req) {
     return new Promise((resolve, reject) => {
         const customerQuery = _initCustomerSearchParams(req);
-        const returnData = function (response) {
+        const returnData =  (response) => {
             return resolve(response.items[0]);
         };
         _submit(customerQuery)
@@ -382,8 +391,26 @@ function validateCustomer(req) {
                 }
                 const customerParams = _initCustomerParams('POST', req);
                 return _submit(customerParams)
-                    .then(response => _submit(customerQuery))
-                    .then(response => returnData(response))
+                    .then(response => {
+                        const reqData = {
+                            url:response.location,
+                            method:'GET',
+                        };
+                        Object.assign(reqData, defaultParams);
+                        return _submit(reqData);
+                    })
+                    .then(response => {
+                        //Wrap fucking helpscout data.
+                        response.item.emails[0] = response.item.emails[0].value;
+                        response.items = [response.item];
+                        delete response.item;
+                        return returnData(response);
+                    })
+                    .catch(err => {
+                        console.log('err', err);
+                        return reject(Response.onError(err, `Bad request`, 400))
+                    })
+
             })
             .catch(err => reject(Response.onError(err, `Bad request`, 400)))
 
@@ -425,9 +452,7 @@ function updateQuestionThread(req) {
     return new Promise((resolve, reject) => {
         if (!req.body.threadId) return reject(Response.onError(null, `Provide thread id`, 400));
         if (!req.body.description) return reject(Response.onError(null, `Provide description`, 400));
-        console.log(req.body.threadId)
-        console.log(req.conversation)
-        const findThread = _.find(req.conversation.threads, (thread) => thread.id == req.body.threadId && thread.createdBy.email == req.user.email);
+        const findThread = req.conversation.myThreadId == req.body.threadId;
         if (!findThread) return reject(Response.onError(null, `invalid thread`, 400));
         const threadParams = _initUpdateThread(req);
         _submit(threadParams)
@@ -528,7 +553,7 @@ function searchConversations(req) {
         const options = _initSearchParams(req);
         return _submit(options)
             .then(response => mappers.conversation(response))
-            .then(response => resolve(response))
+            .then(response => resolve(mappers.mergeVotes(req.votedConversations, response)))
             .catch(err => reject(Response.onError(err, `Bad request`, 400)))
     })
 }

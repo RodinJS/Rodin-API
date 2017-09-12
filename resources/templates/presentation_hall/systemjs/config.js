@@ -1,21 +1,24 @@
 (function (global) {
 
-  var paths = {
-    'npm:': 'https://cdn.rodin.io/v0.0.7/'
-  };
+    var paths = {
+        'npm:': 'https://cdn.rodin.io/v0.0.7/',
+        'modules:': '/modules'
+    };
 
-  var map = {
-    'rodin/core': 'npm:core',
-    'rodin/physics': 'npm:physics'
-  };
+    var map = {
+        'rodin/core': 'npm:core',
+        'rodin/physics': 'npm:physics',
+        'rodin/modules':'modules:'
+    };
 
-  var packages = {
-    'dist': { main: 'index.js', defaultExtension: 'js' },
-    'rodin/core': { main: 'index.js', defaultExtension: 'js' },
-    'rodin/physics': { main: 'index.js', defaultExtension: 'js' },
-  };
+    var packages = {
+        'dist': { main: 'index.js', defaultExtension: 'js' },
+        'rodin/core': { main: 'index.js', defaultExtension: 'js' },
+        'rodin/physics': { main: 'index.js', defaultExtension: 'js' },
+        'rodin/modules':{main:''}
+    };
 
-  var moduleNames = [
+    var moduleNames = [
         'core/error',
         'core/time',
         'core/scene',
@@ -44,25 +47,29 @@
         'core/transport',
         'core/device',
         'core/grid',
-  ];
+    ];
 
-  function packIndex(moduleName) {
-    packages['' + paths['npm:'] + moduleName + ''] = { main: 'index.js', defaultExtension: 'js' };
-  }
-
-  moduleNames.forEach(packIndex);
-
-  var config = {
-    paths: paths,
-    map: map,
-    packages: packages,
-    meta: {
-        '*': {
-            authorization: true
-        }
+    function packIndex(moduleName) {
+        packages['' + paths['npm:'] + moduleName + ''] = { main: 'index.js', defaultExtension: 'js' };
     }
-  };
 
-  System.config(config);
+    moduleNames.forEach(packIndex);
+
+    var config = {
+        paths: paths,
+        map: map,
+        packages: packages,
+        meta: {
+            'https://cdnjs.cloudflare.com/*':{
+                authorization: false
+            },
+            '*': {
+                authorization: true
+            }
+        }
+    };
+    //https://cdnjs.cloudflare.com/
+
+    System.config(config);
 
 })(this);
