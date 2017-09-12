@@ -17,7 +17,7 @@ module.exports = {
         facebook: {
             clientID: '216982868736046',
             clientSecret: '12377e383557cecdc463f202cdc89758',
-            callbackURL: 'https://rodin.space/api/auth/facebook/callback',
+            callbackURL: 'https://rodinapp.com/api/auth/facebook/callback',
         },
         google: {
             clientID: 'test',
@@ -41,11 +41,11 @@ module.exports = {
     },
     ios: {
         urls: {
-            build: 'http://63.135.170.41:10001/api/v1/project',
-            cancel: 'http://63.135.170.41:10001/api/v1/project',
-            get: 'http://63.135.170.41:10001/api/v1/project',
-            download: 'http://63.135.170.41:10001/api/v1/bin',
-            getStatus: 'http://63.135.170.41:10001/api/v1/status',
+            build: 'http://63.135.170.41:12000/api/v1/project',
+            cancel: 'http://63.135.170.41:12000/api/v1/project',
+            get: 'http://63.135.170.41:12000/api/v1/project',
+            download: 'http://63.135.170.41:12000/api/v1/bin',
+            getStatus: 'http://63.135.170.41:12000/api/v1/status',
         },
         appId: '0d5f6462d2ad2ecc',
         appSecret: '5119dbd5-cff3-252f-f8d9-966ff4d3',
