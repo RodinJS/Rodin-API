@@ -30,8 +30,8 @@ module.exports = {
             callbackURL: 'http://localhost:3000/api/auth/steam/callback',
         },
         github: {
-            clientId: 'fa69c03ad5758fce1f10',
-            clientSecret: 'f6168859547a3a420948257e946170cb0da80fa8',
+            clientId: '2fa42e9372769cc4c527',
+            clientSecret: '88bc2d273572783ba635ac901fb0d7d909f45224',
         },
     },
     urlshortenerkey: 'AIzaSyCe5zVHHHhhv40N-WzeffxWva377dPQnH8',
