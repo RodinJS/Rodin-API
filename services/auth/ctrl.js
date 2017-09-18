@@ -204,7 +204,7 @@ function socialAuth(req) {
                     });
                     return _saveUserFromSocial(userObject);
                 }
-                if(req.params.socialName == 'github') return reject(Response.onError(null, httpStatus.GIT_ALREADY_SYNCED.message, 400));
+                if(user.github && req.params.socialName == 'github') return reject(Response.onError(null, httpStatus.GIT_ALREADY_SYNCED.message, 400));
                 return _updateUserFromSocial(req, user);
             })
             .then(data => {
