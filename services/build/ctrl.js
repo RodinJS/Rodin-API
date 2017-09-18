@@ -127,7 +127,7 @@ function buildIos(req) {
         }, 'ios', 'POST')
             .then(body => _saveInProject(req, body, 'ios'))
             .then(response => resolve({requested: true}))
-            .catch(err => reject(Response.onError(err, `Can't build android`, 400)))
+            .catch(err => reject(Response.onError(err, `Can't build iOS`, 400)))
     })
 }
 
