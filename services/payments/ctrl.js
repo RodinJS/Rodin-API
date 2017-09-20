@@ -12,7 +12,7 @@ const stripe = require('stripe')(stripeKeys.secret);
 
 function getCustomer(req) {
     return new Promise((resolve, reject) => {
-        if (!req.user.stripe && !req.user.stripe.customerId) return resolve(null);
+        if (!req.user.stripe || !req.user.stripe.customerId) return resolve({});
 
         stripe.customers.retrieve(req.user.stripe.customerId, (err, customer) => {
             if (err) reject(Response.onError(err, `Customer getting error!`, 400));
@@ -23,23 +23,42 @@ function getCustomer(req) {
 
 function createCustomer(req) {
     return new Promise((resolve, reject) => {
-        if (_.isUndefined(req.body.stripeToken)) {
-            return reject(Response.onError(null, `Provide stripe token!`, 400));
-        }
-
-        const requestData = {
-            email: req.user.email,
-            source: req.body.stripeToken,
-            metadata: {
-                username: req.user.username,
-            },
-        };
-        stripe.customers.create(requestData, (err, customer) => {
-            if (err) return reject(Response.onError(err, `Customer creation error!`, 400));
-            const payment = {stripe: {}};
-            Object.assign(payment.stripe, {customerId: customer.id});
-            return resolve({message: `Subscription created successfully`, payment: payment});
+        let exp_month = req.body.expireDate.split('/')[0];
+        let exp_year = Number('20' + req.body.expireDate.split('/')[1]);
+        stripe.tokens.create({
+            card: {
+                "number": req.body.cardNumber,
+                "exp_month": exp_month,
+                "exp_year": exp_year,
+                "cvc": req.body.securityCode,
+                "address_city": req.body.city,
+                "address_line1": req.body.address,
+                "address_country": req.body.country,
+                "address_zip": req.body.postalCode,
+                "name": `${req.body.firstName} ${req.body.lastName}`
+            }
+        }, (err, token) => {
+            if (err) return console.error('stripe error', err);
+            const requestData = {
+                email: req.user.email,
+                source: token.id,
+                metadata: {
+                    username: req.user.username,
+                },
+            };
+            stripe.customers.create(requestData, (err, customer) => {
+                if (err) return reject(Response.onError(err, `Customer creation error!`, 400));
+                const payment = {stripe: {}};
+                Object.assign(payment.stripe, {customerId: customer.id});
+                return resolve({message: `Customer created successfully`, payment: payment});
+            });
         });
+        // if (_.isUndefined(req.body.stripeToken)) {
+        //     return reject(Response.onError(null, `Provide stripe token!`, 400));
+        // }
+        //
+
+
     })
 }
 
@@ -60,8 +79,8 @@ function updateCustomer(req) {
     })
 }
 
-function deleteCustomer(req){
-    return new Promise((resolve, reject)=>{
+function deleteCustomer(req) {
+    return new Promise((resolve, reject) => {
         if (!req.user.stripe && !req.user.stripe.customerId) return reject(Response.onError(null, `No Customer!`, 400));
         stripe.customers.del(req.user.stripe.customerId, (err, confirmation) => {
             if (err) return reject(Response.onError(err, `Customer delete error!`, 400));
@@ -72,10 +91,13 @@ function deleteCustomer(req){
 
 function getSubscription(req) {
     return new Promise((resolve, reject) => {
+        if (!req.user.stripe || !req.user.stripe.subscriptionId) return resolve({});
+
         stripe.subscriptions.retrieve(req.user.stripe.subscriptionId, (err, subscription) => {
             if (err) return reject(Response.onError(err, `Get subscription error!`, 400));
             return resolve(subscription);
         });
+
     })
 }
 
@@ -106,8 +128,8 @@ function createSubscription(req) {
 
 }
 
-function updateSubscription(req){
-    return new Promise((resolve, reject)=>{
+function updateSubscription(req) {
+    return new Promise((resolve, reject) => {
         if (_.isUndefined(req.user.stripe.subscriptionId)) {
             return reject(Response.onError(null, `Not subscribed!`, 400));
         }
@@ -127,16 +149,16 @@ function updateSubscription(req){
     })
 }
 
-function deleteSubscription(req){
-    return new Promise((resolve, reject)=>{
+function deleteSubscription(req) {
+    return new Promise((resolve, reject) => {
         if (_.isUndefined(req.user.stripe.subscriptionId)) {
             return reject(Response.onError(null, `Not subscribed!`, 400));
         }
-        stripe.subscriptions.del(req.user.stripe.subscriptionId, (err, confirmation)=> {
+        stripe.subscriptions.del(req.user.stripe.subscriptionId, (err, confirmation) => {
             if (err) return reject(Response.onError(err, `Subscription deletion error!`, 400));
 
 
-            const payment = { stripe: _.omit(req.user.stripe, 'subscriptionId'), planId: 'Free' };
+            const payment = {stripe: _.omit(req.user.stripe, 'subscriptionId'), planId: 'Free'};
             console.log('payment', payment);
             return resolve({message: `Subscription deleted successfully`, payment: payment});
 
@@ -149,18 +171,66 @@ function updateUser(req) {
         const updatingData = req.payment;
         const query = {};
         if (updatingData) {
-            if(req.payment.planId){
+            if (req.payment.planId) {
                 updatingData.role = req.payment.planId;
                 delete updatingData.planId;
             }
             Object.assign(query, {$set: updatingData})
         }
-        if(req.deleteCustomer){
-            Object.assign(query, {$unset:{stripe:1}})
+        if (req.deleteCustomer) {
+            Object.assign(query, {$unset: {stripe: 1}})
         }
         User.findOneAndUpdate({username: req.user.username}, query, {new: true})
             .then(user => resolve(user))
             .catch(e => reject(Response.onError(err, `Customer creation error!`, 400)))
+    })
+}
+
+function getPlans(req) {
+    return new Promise((resolve, reject) => {
+        stripe.plans.list(
+            function (err, plans) {
+                if (err) {
+                    return reject(Response.onError(err, `plans error!`, 400))
+                }
+                return resolve(plans)
+                // asynchronously called
+            }
+        );
+    })
+}
+
+function createPlan(req) {
+    return new Promise((resolve, reject) => {
+        stripe.plans.create({
+            amount: req.body.amount,
+            interval: req.body.interval,
+            name: req.body.name,
+            currency: req.body.currency,
+            id: req.body.id
+        }, function (err, plan) {
+            if (err) {
+                return reject(Response.onError(err, `plans error!`, 400))
+            }
+            return resolve({plan: plan})
+        });
+    })
+}
+
+function getCharges(req) {
+    return new Promise((resolve, reject) => {
+        if (!req.user.stripe) {
+            return resolve(null);
+        }
+        stripe.charges.list(
+            { customer: req.user.stripe.customerId },
+            function(err, charges) {
+                if (err) {
+                    return reject(Response.onError(err, `Cant get customer charges!`, 400))
+                }
+                return resolve(charges)
+            }
+        );
     })
 }
 
@@ -173,5 +243,8 @@ module.exports = {
     createSubscription,
     updateSubscription,
     deleteSubscription,
-    deleteCustomer
+    deleteCustomer,
+    getPlans: getPlans,
+    createPlan: createPlan,
+    getCharges: getCharges
 };
