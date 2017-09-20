@@ -1,18 +1,16 @@
 module.exports = {
     env: 'development',
     jwtSecret: '4DNSrMPuQ3Y3McBu96wd2GzGheDXuft8gDqLEQVWHnXQfcaGFtM2ZBgyNYzPN7CK',
-    db: 'mongodb://localhost/rodin-js-api-development',
+    db: 'mongodb://mongo:27017/rodin-api-development',
     clientURL: 'https://rodin.space',
     editorURL: 'https://editor.rodin.space',
     port: 3000,
     socketPort: 4000,
-    host:'http://localhost:3000',
+    host:'http://api.rodin.space',
     socketURL: 'http://localhost:5000',
     modules: {
-        ROOT: 'https://dev.modules.rodin.io',
         socketService: {
-            URL: 'https://modules.rodin.io',
-            port: 4000,
+            port: 5000,
         },
     },
     social: {
@@ -110,9 +108,7 @@ module.exports = {
         },
     },
     mandrill: 'ouOYaHWxlDaabLYVjrG1BA',
-    stuff_path: '/var/www/stuff/',
-    nginx_template_path: '/var/www/api.rodin.space/resources/nginx/',
-    nginx_dest_path: '/etc/nginx/custom/',
+    stuff_path: '/work/stuff/',
     redis: {
         // host: '40.121.202.156',
         host: 'redis-domain',

@@ -105,9 +105,7 @@ module.exports = {
         },
     },
     mandrill: 'ouOYaHWxlDaabLYVjrG1BA',
-    stuff_path: '/var/www/stuff/',
-    nginx_template_path: '/var/www/api.rodin.design/resources/nginx/',
-    nginx_dest_path: '/etc/nginx/custom/',
+    stuff_path: '/work/stuff/',
     redis: {
         // host: '40.121.202.156',
         host: 'redis-domain',

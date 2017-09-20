@@ -72,7 +72,7 @@ buildResponder.on('buildAndroid', (req, cb)=>{
         })
         .then(response=> cb(null, response))
         .catch(err=> {
-            console.log('build vive err', err);
+            console.log('build Android err', err);
             return cb(err, null);
         })
 });
@@ -89,7 +89,7 @@ buildResponder.on('removeAndroid', (req, cb)=>{
         })
         .then(response=> cb(null, response))
         .catch(err=> {
-            console.log('build vive err', err);
+            console.log('remove Android err', err);
             return cb(err, null);
         })
 });
@@ -106,7 +106,7 @@ buildResponder.on('buildIos', (req, cb)=>{
         })
         .then(response=> cb(null, response))
         .catch(err=> {
-            console.log('build vive err', err);
+            console.log('build ios err', err);
             return cb(err, null);
         })
 });
@@ -123,7 +123,7 @@ buildResponder.on('removeIos', (req, cb)=>{
         })
         .then(response=> cb(null, response))
         .catch(err=> {
-            console.log('build vive err', err);
+            console.log('remove ios err', err);
             return cb(err, null);
         })
 });
