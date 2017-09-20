@@ -204,6 +204,8 @@ function socialAuth(req) {
                     });
                     return _saveUserFromSocial(userObject);
                 }
+                console.log(`user ------- to object `, user.toObject())
+                console.log(`user ------- no to `, user.toObject())
                 if(user.github && req.params.socialName == 'github') return reject(Response.onError(null, httpStatus.GIT_ALREADY_SYNCED.message, 400));
                 return _updateUserFromSocial(req, user);
             })
