@@ -1,7 +1,7 @@
 module.exports = {
     env: 'local',
     jwtSecret: '4DNSrMPuQ3Y3McBu96wd2GzGheDXuft8gDqLEQVWHnXQfcaGFtM2ZBgyNYzPN7CK',
-    db: 'mongodb://localhost/rodin-js-api-development',
+    db: 'mongodb://localhost:27017/rodin-js-api-development',
     clientURL: 'http://localhost:8585/#',
     editorURL: 'http://localhost:8000/#',
     port: 3000,

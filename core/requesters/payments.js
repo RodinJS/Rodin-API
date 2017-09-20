@@ -69,6 +69,21 @@ function deleteSubscription(req, res, next){
     return _submit(req, res, params);
 }
 
+function getPlans(req, res, next) {
+    const params = { type:'getPlans'};
+    return _submit(req, res, params);
+}
+
+function createPlan(req, res, next) {
+    const params = { type:'createPlan'};
+    return _submit(req, res, params);
+}
+
+function getCharges(req, res, next){
+    const params = { type:'getCharges'};
+    return _submit(req, res, params);
+}
+
 function _onSuccess(res, data, code){
     //console.log('data', data);
     //console.log('!!--- CODE --- !!', code);
@@ -80,6 +95,7 @@ function _onError(res, err){
     return responses.sendError(res, 'paymentsService', err);
 }
 
+
 module.exports = {
     getCustomer:getCustomer,
     createCustomer:createCustomer,
@@ -88,5 +104,8 @@ module.exports = {
     getSubscription:getSubscription,
     createSubscription:createSubscription,
     updateSubscription:updateSubscription,
-    deleteSubscription:deleteSubscription
+    deleteSubscription:deleteSubscription,
+    getPlans:getPlans,
+    createPlan: createPlan,
+    getCharges: getCharges
 };

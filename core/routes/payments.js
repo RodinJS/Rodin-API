@@ -19,4 +19,13 @@ router.route('/stripe/subscription')
     .put(paymentsRequester.updateSubscription)
     .delete(paymentsRequester.deleteSubscription);
 
+router
+    .route('/stripe/charges')
+    .get(paymentsRequester.getCharges);
+router
+    .route('/stripe/plans')
+    .get(paymentsRequester.getPlans)
+    .post(paymentsRequester.createPlan);
+
+
 module.exports = router;
