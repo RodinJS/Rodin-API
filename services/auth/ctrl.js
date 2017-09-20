@@ -206,6 +206,7 @@ function socialAuth(req) {
                 }
                 console.log(`user ------- to object `, user.toObject())
                 console.log(`user ------- no to `, user.toObject())
+                console.log(`if paymanner --------------   ${req.params.socialName} |||||| ${user.github}`);
                 if(user.github && req.params.socialName == 'github') return reject(Response.onError(null, httpStatus.GIT_ALREADY_SYNCED.message, 400));
                 return _updateUserFromSocial(req, user);
             })
