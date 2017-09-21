@@ -42,7 +42,7 @@ const defaultParams = {
 const mappers = {
     pickerParams: ['id', 'threadCount', 'subject', 'status', 'preview', 'createdAt', 'modifiedAt', 'user', 'tags', 'threads', 'rating', 'myThreadId'],
 
-    conversation(data, username) {
+    conversation(data) {
         return new Promise((resolve, reject) => {
             Q.all(_.map(data.items, (conversation, key) => {
                 const options = {
@@ -372,7 +372,7 @@ function getQuestionsList(req) {
         }
         const options = _initConversationListParams(param);
         return _submit(options)
-            .then(response => mappers.conversation(response, req.user.username))
+            .then(response => mappers.conversation(response))
             .then(response => resolve(mappers.mergeVotes(req.votedConversations, response)))
             .catch(err => reject(Response.onError(err, `Bad request`, 400)))
     })
@@ -434,7 +434,9 @@ function createQuestion(req) {
         }
         const conversationParams = _initConversationParams('POST', req, param);
         _submit(conversationParams)
-            .then(response => resolve(`Conversation Created`))
+            .then(response => response)
+            .delay(5000)
+            .then(ret => resolve(`Conversation Created`))
             .catch(err => reject(Response.onError(err, `Bad request`, 400)))
     })
 }
@@ -560,7 +562,7 @@ function searchConversations(req) {
 
 function getUserVotedConversations(req) {
     return new Promise((resolve) => {
-        if (!req.user) resolve(null);
+        if (!req.user) return resolve(null);
         HelpScoutVote.list(req.user.username)
             .then(resolve)
             .catch(err => resolve(null));
