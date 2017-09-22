@@ -213,6 +213,8 @@ function _initSearchParams(req) {
             query: `mailboxid:${mailboxId}`,
             pageSize: req.query.limit || 10,
             page: req.query.page || 1,
+            sortField:'modifiedAt',
+            sortOrder: 'desc'
         }
     };
     if (req.query.subject) data.qs.query += ` AND subject:"${req.query.subject}"`;
