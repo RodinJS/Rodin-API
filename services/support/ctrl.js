@@ -67,7 +67,7 @@ const mappers = {
             thread.createdBy = _.pick(thread.createdBy, ['firstName', 'lastName', 'email', 'photoUrl']);
             thread = _.pick(thread, ['body', 'createdBy', 'createdAt', 'id']);
             return thread;
-        }), (thread)=> new Date(thread.createdAt));
+        }), (thread) => new Date(thread.createdAt));
         conversation.preview = _.first(conversation.threads).body;
         conversation.myThreadId = _.first(conversation.threads).id;
 
@@ -176,9 +176,6 @@ function _initConversationListParams(mailbox) {
         method: 'GET',
         qs: {
             status: 'active',
-            page: 10,
-            sortField:'modifiedAt',
-            sortOrder: 'desc'
         }
     };
     Object.assign(options, defaultParams);
@@ -216,7 +213,7 @@ function _initSearchParams(req) {
             query: `mailboxid:${mailboxId}`,
             pageSize: 10,
             page: req.query.page || 1,
-            sortField:'modifiedAt',
+            sortField: 'modifiedAt',
             sortOrder: 'desc'
         }
     };
@@ -235,7 +232,7 @@ function _initCustomerParams(method, req) {
 
         body: {
             "firstName": req.user.username,
-            "lastName":req.user.username,
+            "lastName": req.user.username,
             "emails": [{
                 "value": req.user.email
             }]
@@ -265,9 +262,9 @@ function _submit(options) {
     return new Promise((resolve, reject) => {
         request(options, (err, response, body) => {
             if (err || response.statusCode > 300) return reject(err || {code: response.statusCode, err: response.body});
-            if(response.headers.location){
-                if(!body) body = {};
-                Object.assign(body, {location:response.headers.location});
+            if (response.headers.location) {
+                if (!body) body = {};
+                Object.assign(body, {location: response.headers.location});
             }
             return resolve(body);
         });
@@ -314,7 +311,7 @@ function _initVoting(req, response, mailbox) {
                             resultValue = 0;
                             break
                     }
-                } else if (!upvoted ) {
+                } else if (!upvoted) {
                     switch (vote.vote) {
                         case 0:
                             resultValue = -1;
@@ -386,7 +383,7 @@ function getQuestionsList(req) {
 function validateCustomer(req) {
     return new Promise((resolve, reject) => {
         const customerQuery = _initCustomerSearchParams(req);
-        const returnData =  (response) => {
+        const returnData = (response) => {
             return resolve(response.items[0]);
         };
         _submit(customerQuery)
@@ -398,8 +395,8 @@ function validateCustomer(req) {
                 return _submit(customerParams)
                     .then(response => {
                         const reqData = {
-                            url:response.location,
-                            method:'GET',
+                            url: response.location,
+                            method: 'GET',
                         };
                         Object.assign(reqData, defaultParams);
                         return _submit(reqData);
@@ -440,7 +437,7 @@ function createQuestion(req) {
         const conversationParams = _initConversationParams('POST', req, param);
         _submit(conversationParams)
             .then(response => response)
-            .delay(5000)
+            .delay(8000)
             .then(ret => resolve(`Conversation Created`))
             .catch(err => reject(Response.onError(err, `Bad request`, 400)))
     })
@@ -515,13 +512,13 @@ function updateConversation(req) {
         };
         Object.assign(options, defaultParams);
 
-
         return _submit(getOptions)
             .then(response => {
+                let tags = _.uniq(_.concat(req.body.tags, response.item.tags)).filter(tag => tag);
                 Object.assign(options.body, {
                     subject: req.body.subject || response.item.subject,
                     status: req.body.status || response.item.status,
-                    tags: req.body.tags ? _.uniq(_.concat(req.body.tags, response.item.tags)) : response.item.tags,
+                    tags: req.body.tags ? tags : response.item.tags,
                     reload: true
                 });
                 return _initVoting(req, response, mailbox);
