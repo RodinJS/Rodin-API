@@ -67,15 +67,15 @@ const mappers = {
             thread.createdBy = _.pick(thread.createdBy, ['firstName', 'lastName', 'email', 'photoUrl']);
             thread = _.pick(thread, ['body', 'createdBy', 'createdAt', 'id']);
             return thread;
-        }), (thread)=> new Date(thread.createdAtxw));
-        conversation.preview = _.last(conversation.threads).body;
-        conversation.myThreadId = _.last(conversation.threads).id;
+        }), (thread)=> new Date(thread.createdAt));
+        conversation.preview = _.first(conversation.threads).body;
+        conversation.myThreadId = _.first(conversation.threads).id;
 
         if (!getThreads) {
             pickerParams = _.remove(pickerParams, (param) => param !== 'threads');
         }
         else {
-            conversation.threads.pop();
+            conversation.threads.shift();
         }
         conversation.rating = conversation.customFields[0] ? parseInt(conversation.customFields[0].value) : 0;
         conversation.user = _.pick(conversation.customer, ['firstName', 'lastName', 'email', 'photoUrl']);
@@ -175,7 +175,10 @@ function _initConversationListParams(mailbox) {
         url: `https://api.helpscout.net/v1/mailboxes/${mailbox}/conversations.json`,
         method: 'GET',
         qs: {
-            status: 'active'
+            status: 'active',
+            page: 10,
+            sortField:'modifiedAt',
+            sortOrder: 'desc'
         }
     };
     Object.assign(options, defaultParams);
@@ -211,7 +214,7 @@ function _initSearchParams(req) {
         method: 'GET',
         qs: {
             query: `mailboxid:${mailboxId}`,
-            pageSize: req.query.limit || 10,
+            pageSize: 10,
             page: req.query.page || 1,
             sortField:'modifiedAt',
             sortOrder: 'desc'
@@ -477,7 +480,9 @@ function getConversation(req) {
         Object.assign(options, defaultParams);
         return _submit(options)
             .then(response => resolve(mappers.mergeVotes(req.votedConversations, mappers.singleConversation(response.item))))
-            .catch(err => reject(Response.onError(err, `Bad request`, 400)))
+            .catch(err => {
+                return reject(Response.onError(err, `Bad request`, 400))
+            })
     })
 }
 
@@ -558,7 +563,10 @@ function searchConversations(req) {
         return _submit(options)
             .then(response => mappers.conversation(response))
             .then(response => resolve(mappers.mergeVotes(req.votedConversations, response)))
-            .catch(err => reject(Response.onError(err, `Bad request`, 400)))
+            .catch(err => {
+                console.log(err)
+                return reject(Response.onError(err, `Bad request`, 400))
+            })
     })
 }
 
