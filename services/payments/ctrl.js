@@ -32,7 +32,7 @@ function createCustomer(req) {
                 "exp_year": exp_year,
                 "cvc": req.body.securityCode,
                 "address_city": req.body.city,
-                "address_line1": req.body.address,
+                "address_line1": req.body.address || '',
                 "address_country": req.body.country,
                 "address_zip": req.body.postalCode,
                 "name": `${req.body.firstName} ${req.body.lastName}`
