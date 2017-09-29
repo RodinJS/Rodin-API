@@ -35,7 +35,7 @@ module.exports = {
         body: {
             email: Joi.string().optional(),
             username: Joi.string().optional(),
-            notification:Joi.boolean().optional(),
+            notification: Joi.boolean().optional(),
             profile: {
                 firstName: Joi.string().optional().allow(''),
                 lastName: Joi.string().optional().allow(''),
@@ -84,7 +84,7 @@ module.exports = {
                     },
                 },
             }),
-            token:Joi.string().optional().allow('')
+            token: Joi.string().optional().allow('')
         },
     },
 
@@ -151,6 +151,36 @@ module.exports = {
             password: Joi.string().required(),
         },
     },
+
+
+    createCustomer: {
+        body: {
+            cardNumber: Joi.string().required(),
+            city: Joi.string().required(),
+            country: Joi.string().required(),
+            expireDate: Joi.string().required(),
+            firstName: Joi.string().required(),
+            lastName: Joi.string().required(),
+            postalCode: Joi.string().required(),
+            securityCode: Joi.string().required(),
+        },
+    },
+
+    upgradeSubscription: {
+        body: {
+            card: {
+                cardNumber: Joi.number().required(),
+                city: Joi.string().required(),
+                country: Joi.string().required(),
+                expireDate: Joi.string().required(),
+                firstName: Joi.string().required(),
+                lastName: Joi.string().required(),
+                postalCode: Joi.string().required(),
+                securityCode: Joi.string().required(),
+            },
+            planId: Joi.string().required()
+        }
+    }
 };
 
 
