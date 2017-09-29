@@ -69,24 +69,72 @@ function deleteSubscription(req, res, next){
     return _submit(req, res, params);
 }
 
+function getPlans(req, res, next) {
+    const params = { type:'getPlans'};
+    return _submit(req, res, params);
+}
+
+function createPlan(req, res, next) {
+    const params = { type:'createPlan'};
+    return _submit(req, res, params);
+}
+
+
+function createToken(req, res, next) {
+    const params = { type:'createToken'};
+    return _submit(req, res, params);
+}
+
+function getCharges(req, res, next){
+    const params = { type:'getCharges'};
+    return _submit(req, res, params);
+}
+
+
+function getTokens(req, res, next) {
+    const params = { type:'getTokens'};
+    return _submit(req, res, params);
+}
+
+function getInvoices(req, res, next) {
+    const params = { type:'getInvoices'};
+    return _submit(req, res, params);
+}
+
+function upgradeSubscription(req, res, next) {
+    const params = { type:'upgradeSubscription'};
+    return _submit(req, res, params);
+}
+
+function upcomingInvoices(req, res, next) {
+    const params = { type:'upcomingInvoices'};
+    return _submit(req, res, params);
+}
+
 function _onSuccess(res, data, code){
-    //console.log('data', data);
-    //console.log('!!--- CODE --- !!', code);
     return res.status(code || 200).json({success:true, data:data});
 }
 
 function _onError(res, err){
-    console.error('Core response', err);
     return responses.sendError(res, 'paymentsService', err);
 }
 
+
 module.exports = {
-    getCustomer:getCustomer,
+    getCustomer: getCustomer,
     createCustomer:createCustomer,
     updateCustomer:updateCustomer,
     deleteCustomer:deleteCustomer,
     getSubscription:getSubscription,
     createSubscription:createSubscription,
     updateSubscription:updateSubscription,
-    deleteSubscription:deleteSubscription
+    deleteSubscription:deleteSubscription,
+    getPlans:getPlans,
+    createPlan: createPlan,
+    getCharges: getCharges,
+    createToken: createToken,
+    getTokens,
+    getInvoices,
+    upgradeSubscription,
+    upcomingInvoices
 };

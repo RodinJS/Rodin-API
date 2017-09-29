@@ -56,6 +56,23 @@ paymentsResponder.on('getCustomer', (req, cb) => {
         })
 });
 
+paymentsResponder.on('createSubscription', (req, cb) => {
+    Check.ifTokenValid(req)
+        .then(user => {
+            Object.assign(req, {user: user});
+            return Ctrl.createSubscription(req);
+        })
+        .then(subscriptionCreated => {
+            Object.assign(req, subscriptionCreated);
+            return Ctrl.updateUser(req);
+        })
+        .then(response => cb(null, response))
+        .catch(err => {
+            console.log('stripe Customer create err', err);
+            return cb(err, null);
+        })
+});
+
 paymentsResponder.on('updateCustomer', (req, cb) => {
     Check.ifTokenValid(req)
         .then(user => {
@@ -100,19 +117,30 @@ paymentsResponder.on('getSubscription', (req, cb) => {
         })
 });
 
-paymentsResponder.on('createSubscription', (req, cb) => {
+paymentsResponder.on('getPlans', (req, cb) => {
     Check.ifTokenValid(req)
         .then(user => {
             Object.assign(req, {user: user});
-            return Ctrl.createSubscription(req);
-        })
-        .then(subscriptionCreated => {
-            Object.assign(req, subscriptionCreated);
-            return Ctrl.updateUser(req);
+            return Ctrl.getPlans(req);
         })
         .then(response => cb(null, response))
         .catch(err => {
-            console.log('stripe Customer create err', err);
+            console.log('stripe Customer update err', err);
+            return cb(err, null);
+        })
+});
+
+
+
+paymentsResponder.on('createPlan', (req, cb) => {
+    Check.ifTokenValid(req)
+        .then(user => {
+            Object.assign(req, {user: user});
+            return Ctrl.createPlan(req);
+        })
+        .then(response => cb(null, response))
+        .catch(err => {
+            console.log('create plan', err);
             return cb(err, null);
         })
 });
@@ -148,6 +176,85 @@ paymentsResponder.on('deleteSubscription', (req, cb) => {
         .catch(err => {
             console.log('stripe subscription update err', err);
             return cb(err, null);
+        })
+});
+
+paymentsResponder.on('getCharges', (req, cb) => {
+    Check.ifTokenValid(req)
+        .then(user => {
+            Object.assign(req, {user: user});
+            return Ctrl.getCharges(req);
+        })
+        .then(response => cb(null, response))
+        .catch(err => {
+            console.log('getCustomerError', err);
+            cb(err, null)
+        })
+});
+
+
+paymentsResponder.on('createToken', (req, cb) => {
+    Check.ifTokenValid(req)
+        .then(user => {
+            Object.assign(req, {user: user});
+            return Ctrl.createToken(req);
+        })
+        .then(response => cb(null, response))
+        .catch(err => {
+            console.log('createTokenError', err);
+            cb(err, null)
+        })
+});
+
+paymentsResponder.on('getTokens', (req, cb) => {
+    Check.ifTokenValid(req)
+        .then(user => {
+            Object.assign(req, {user: user});
+            return Ctrl.getTokens(req);
+        })
+        .then(response => cb(null, response))
+        .catch(err => {
+            console.log('getTokensError', err);
+            cb(err, null)
+        })
+});
+
+paymentsResponder.on('getInvoices', (req, cb) => {
+    Check.ifTokenValid(req)
+        .then(user => {
+            Object.assign(req, {user: user});
+            return Ctrl.getInvoices(req);
+        })
+        .then(response => cb(null, response))
+        .catch(err => {
+            console.log('getInvoicesError', err);
+            cb(err, null)
+        })
+});
+
+paymentsResponder.on('upgradeSubscription', (req, cb) => {
+    Check.ifTokenValid(req)
+        .then(user => {
+            Object.assign(req, {user: user});
+            return Ctrl.upgradeSubscription(req);
+        })
+        .then(response => cb(null, response))
+        .catch(err => {
+            console.log('upgradeSubscribtionError', err);
+            cb(err, null)
+        })
+});
+
+paymentsResponder.on('upcomingInvoices', (req, cb) => {
+    Check.ifTokenValid(req)
+        .then(user => {
+            Object.assign(req, {user: user});
+            return Ctrl.upcomingInvoices(req);
+        })
+        .then(response => cb(null, response))
+        .catch(err => {
+            console.log('upcomingInvoices', err);
+            cb(err, null)
         })
 });
 

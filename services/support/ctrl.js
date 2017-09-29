@@ -42,7 +42,7 @@ const defaultParams = {
 const mappers = {
     pickerParams: ['id', 'threadCount', 'subject', 'status', 'preview', 'createdAt', 'modifiedAt', 'user', 'tags', 'threads', 'rating', 'myThreadId'],
 
-    conversation(data, username) {
+    conversation(data) {
         return new Promise((resolve, reject) => {
             Q.all(_.map(data.items, (conversation, key) => {
                 const options = {
@@ -67,15 +67,15 @@ const mappers = {
             thread.createdBy = _.pick(thread.createdBy, ['firstName', 'lastName', 'email', 'photoUrl']);
             thread = _.pick(thread, ['body', 'createdBy', 'createdAt', 'id']);
             return thread;
-        }), (thread)=> new Date(thread.createdAtxw));
-        conversation.preview = _.last(conversation.threads).body;
-        conversation.myThreadId = _.last(conversation.threads).id;
+        }), (thread) => new Date(thread.createdAt));
+        conversation.preview = _.first(conversation.threads).body;
+        conversation.myThreadId = _.first(conversation.threads).id;
 
         if (!getThreads) {
             pickerParams = _.remove(pickerParams, (param) => param !== 'threads');
         }
         else {
-            conversation.threads.pop();
+            conversation.threads.shift();
         }
         conversation.rating = conversation.customFields[0] ? parseInt(conversation.customFields[0].value) : 0;
         conversation.user = _.pick(conversation.customer, ['firstName', 'lastName', 'email', 'photoUrl']);
@@ -175,7 +175,7 @@ function _initConversationListParams(mailbox) {
         url: `https://api.helpscout.net/v1/mailboxes/${mailbox}/conversations.json`,
         method: 'GET',
         qs: {
-            status: 'active'
+            status: 'active',
         }
     };
     Object.assign(options, defaultParams);
@@ -211,8 +211,10 @@ function _initSearchParams(req) {
         method: 'GET',
         qs: {
             query: `mailboxid:${mailboxId}`,
-            pageSize: req.query.limit || 10,
+            pageSize: 10,
             page: req.query.page || 1,
+            sortField: 'modifiedAt',
+            sortOrder: 'desc'
         }
     };
     if (req.query.subject) data.qs.query += ` AND subject:"${req.query.subject}"`;
@@ -230,7 +232,7 @@ function _initCustomerParams(method, req) {
 
         body: {
             "firstName": req.user.username,
-            "lastName":req.user.username,
+            "lastName": req.user.username,
             "emails": [{
                 "value": req.user.email
             }]
@@ -260,9 +262,9 @@ function _submit(options) {
     return new Promise((resolve, reject) => {
         request(options, (err, response, body) => {
             if (err || response.statusCode > 300) return reject(err || {code: response.statusCode, err: response.body});
-            if(response.headers.location){
-                if(!body) body = {};
-                Object.assign(body, {location:response.headers.location});
+            if (response.headers.location) {
+                if (!body) body = {};
+                Object.assign(body, {location: response.headers.location});
             }
             return resolve(body);
         });
@@ -309,7 +311,7 @@ function _initVoting(req, response, mailbox) {
                             resultValue = 0;
                             break
                     }
-                } else if (!upvoted ) {
+                } else if (!upvoted) {
                     switch (vote.vote) {
                         case 0:
                             resultValue = -1;
@@ -372,7 +374,7 @@ function getQuestionsList(req) {
         }
         const options = _initConversationListParams(param);
         return _submit(options)
-            .then(response => mappers.conversation(response, req.user.username))
+            .then(response => mappers.conversation(response))
             .then(response => resolve(mappers.mergeVotes(req.votedConversations, response)))
             .catch(err => reject(Response.onError(err, `Bad request`, 400)))
     })
@@ -381,7 +383,7 @@ function getQuestionsList(req) {
 function validateCustomer(req) {
     return new Promise((resolve, reject) => {
         const customerQuery = _initCustomerSearchParams(req);
-        const returnData =  (response) => {
+        const returnData = (response) => {
             return resolve(response.items[0]);
         };
         _submit(customerQuery)
@@ -393,8 +395,8 @@ function validateCustomer(req) {
                 return _submit(customerParams)
                     .then(response => {
                         const reqData = {
-                            url:response.location,
-                            method:'GET',
+                            url: response.location,
+                            method: 'GET',
                         };
                         Object.assign(reqData, defaultParams);
                         return _submit(reqData);
@@ -434,7 +436,9 @@ function createQuestion(req) {
         }
         const conversationParams = _initConversationParams('POST', req, param);
         _submit(conversationParams)
-            .then(response => resolve(`Conversation Created`))
+            .then(response => response)
+            .delay(8000)
+            .then(ret => resolve(`Conversation Created`))
             .catch(err => reject(Response.onError(err, `Bad request`, 400)))
     })
 }
@@ -473,7 +477,9 @@ function getConversation(req) {
         Object.assign(options, defaultParams);
         return _submit(options)
             .then(response => resolve(mappers.mergeVotes(req.votedConversations, mappers.singleConversation(response.item))))
-            .catch(err => reject(Response.onError(err, `Bad request`, 400)))
+            .catch(err => {
+                return reject(Response.onError(err, `Bad request`, 400))
+            })
     })
 }
 
@@ -506,13 +512,13 @@ function updateConversation(req) {
         };
         Object.assign(options, defaultParams);
 
-
         return _submit(getOptions)
             .then(response => {
+                let tags = _.uniq(_.concat(req.body.tags, response.item.tags)).filter(tag => tag);
                 Object.assign(options.body, {
                     subject: req.body.subject || response.item.subject,
                     status: req.body.status || response.item.status,
-                    tags: req.body.tags ? _.uniq(_.concat(req.body.tags, response.item.tags)) : response.item.tags,
+                    tags: req.body.tags ? tags : response.item.tags,
                     reload: true
                 });
                 return _initVoting(req, response, mailbox);
@@ -554,13 +560,16 @@ function searchConversations(req) {
         return _submit(options)
             .then(response => mappers.conversation(response))
             .then(response => resolve(mappers.mergeVotes(req.votedConversations, response)))
-            .catch(err => reject(Response.onError(err, `Bad request`, 400)))
+            .catch(err => {
+                console.log(err)
+                return reject(Response.onError(err, `Bad request`, 400))
+            })
     })
 }
 
 function getUserVotedConversations(req) {
     return new Promise((resolve) => {
-        if (!req.user) resolve(null);
+        if (!req.user) return resolve(null);
         HelpScoutVote.list(req.user.username)
             .then(resolve)
             .catch(err => resolve(null));
