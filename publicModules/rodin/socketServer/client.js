@@ -33,8 +33,8 @@ var SocketServer = exports.SocketServer = function () {
     function SocketServer() {
         _classCallCheck(this, SocketServer);
 
-        this.host = 'http://localhost:3000/api';
-        this.socketHost = 'http://localhost:5000';
+        this.host = '{subscriptionURL}/api';
+        this.socketHost = '{socketURL}';
         this.emitBuffer = {};
         this.listenerBuffer = {};
         this.disconnected = this.disconnected.bind(this);
@@ -71,7 +71,6 @@ var SocketServer = exports.SocketServer = function () {
                 _this.ns = response.data.ns;
                 //console.log('NS SETTINGS', [this.ns, params, this.host]);
                 //console.log('io', io);
-                console.log(_socketIoMin2.default);
                 _this.Socket = (0, _socketIoMin2.default)(_this.socketHost + '/' + _this.ns, {
                     query: data,
                     resource: "socket.io"
