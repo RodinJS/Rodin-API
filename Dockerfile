@@ -6,14 +6,14 @@ WORKDIR /tmp
 
 ADD package.json /tmp/package.json
 RUN npm install
-RUN npm i -g gulp
-RUN gulp moduleCompiler
 
 FROM rodinvr/nodejs:6-alpine
 
 COPY --from=0 /tmp /var/www/api
 WORKDIR /var/www/api
 ADD . /var/www/api
+RUN npm i -g gulp
+RUN gulp moduleCompiler
 
 EXPOSE 3000 4000
 
