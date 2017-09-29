@@ -193,5 +193,71 @@ paymentsResponder.on('getCharges', (req, cb) => {
 });
 
 
+paymentsResponder.on('createToken', (req, cb) => {
+    Check.ifTokenValid(req)
+        .then(user => {
+            Object.assign(req, {user: user});
+            return Ctrl.createToken(req);
+        })
+        .then(response => cb(null, response))
+        .catch(err => {
+            console.log('createTokenError', err);
+            cb(err, null)
+        })
+});
+
+paymentsResponder.on('getTokens', (req, cb) => {
+    Check.ifTokenValid(req)
+        .then(user => {
+            Object.assign(req, {user: user});
+            return Ctrl.getTokens(req);
+        })
+        .then(response => cb(null, response))
+        .catch(err => {
+            console.log('getTokensError', err);
+            cb(err, null)
+        })
+});
+
+paymentsResponder.on('getInvoices', (req, cb) => {
+    Check.ifTokenValid(req)
+        .then(user => {
+            Object.assign(req, {user: user});
+            return Ctrl.getInvoices(req);
+        })
+        .then(response => cb(null, response))
+        .catch(err => {
+            console.log('getInvoicesError', err);
+            cb(err, null)
+        })
+});
+
+paymentsResponder.on('upgradeSubscription', (req, cb) => {
+    Check.ifTokenValid(req)
+        .then(user => {
+            Object.assign(req, {user: user});
+            return Ctrl.upgradeSubscription(req);
+        })
+        .then(response => cb(null, response))
+        .catch(err => {
+            console.log('upgradeSubscribtionError', err);
+            cb(err, null)
+        })
+});
+
+paymentsResponder.on('upcomingInvoices', (req, cb) => {
+    Check.ifTokenValid(req)
+        .then(user => {
+            Object.assign(req, {user: user});
+            return Ctrl.upcomingInvoices(req);
+        })
+        .then(response => cb(null, response))
+        .catch(err => {
+            console.log('upcomingInvoices', err);
+            cb(err, null)
+        })
+});
+
+
 //authResponder.on('*', console.log);
 
