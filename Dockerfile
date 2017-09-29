@@ -6,6 +6,8 @@ WORKDIR /tmp
 
 ADD package.json /tmp/package.json
 RUN npm install
+RUN npm i -g gulp
+RUN gulp moduleCompiler
 
 FROM rodinvr/nodejs:6-alpine
 
