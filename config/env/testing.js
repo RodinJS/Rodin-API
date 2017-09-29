@@ -8,7 +8,7 @@ module.exports = {
     socketPort: 4000,
     host:'https://api.rodinapp.com',
     subscriptionURL: 'https://api.rodinapp.com',
-    socketURL: 'http://wss.rodinapp.com',
+    socketURL: 'https://wss.rodinapp.com',
     modules: {
         socketService: {
             port: 5000,
