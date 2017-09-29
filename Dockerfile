@@ -16,7 +16,7 @@ COPY --from=0 /tmp /var/www/api
 WORKDIR /var/www/api
 ADD . /var/www/api
 RUN npm i -g gulp
-RUN gulp moduleCompiler
+RUN export NODE_ENV=testing gulp moduleCompiler
 
 EXPOSE 3000 4000
 
