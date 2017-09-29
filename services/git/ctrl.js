@@ -92,7 +92,6 @@ function _initAndPush(repoData, req){
     return _pushProject(repoData.project.projectRoot, repoUrl, repoData.project, req)
 }
 
-
 function _sendErrorNotification(project, req, err) {
     Object.assign(req, {
         notification: {
@@ -172,8 +171,10 @@ function getToken(req) {
             },
             json: true,
         };
+        console.log('GIT OPTIONS', options);
         request(options)
             .then((tokenInfo) => {
+                console.log('tokenInfo', tokenInfo);
                 console.log(`github-access-token is, ${tokenInfo.access_token}`);
                 resolve(tokenInfo.access_token);
             })
