@@ -480,7 +480,8 @@ function serverFile(req) {
             }
             const module = moduleData.module;
             const moduleOwnerDirName = module.author == 'Rodin team' ? 'rodin' : 'users';
-            const moduleGlobalDir = `${__dirname}/../../publicModules/${moduleOwnerDirName}/`;
+            // const moduleGlobalDir = `${__dirname}/../../publicModules/${moduleOwnerDirName}/`;
+            const moduleGlobalDir = `/var/www/api/publicModules/${moduleOwnerDirName}/`;
             const moduleDir = `${moduleGlobalDir}${module.url}`;
             const indexFile = `${moduleDir}/client.js`;
 
