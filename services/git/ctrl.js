@@ -62,7 +62,12 @@ function _createRepo(repoName, token, project) {
  */
 function _pushProject(projectRoot, repoUrl, project, req) {
     return new Promise((resolve, reject) => {
-        git(projectRoot).init()
+        //return
+
+        git(projectRoot)
+            .init()
+            .then(response=> git(projectRoot).addConfig('user.email', req.user.github))
+
             .then(response => git(projectRoot).add('*'))
             .then(response => git(projectRoot).commit("first commit!"))
             .then(response => git(projectRoot).addRemote('origin', repoUrl))
