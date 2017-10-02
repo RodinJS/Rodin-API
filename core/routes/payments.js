@@ -24,6 +24,11 @@ router
     .delete(paymentsRequester.deleteSubscription);
 
 router
+    .route('/stripe/subscriptions')
+    .get(paymentsRequester.getSubscriptions);
+
+
+router
     .route('/stripe/subscription/upgrade')
     .put(validate(paramValidation.upgradeSubscription), paymentsRequester.upgradeSubscription);
 
