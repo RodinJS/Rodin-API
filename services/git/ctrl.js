@@ -62,7 +62,12 @@ function _createRepo(repoName, token, project) {
  */
 function _pushProject(projectRoot, repoUrl, project, req) {
     return new Promise((resolve, reject) => {
-        git(projectRoot).init()
+        //return
+
+        git(projectRoot)
+            .init()
+            .then(response=> git(projectRoot).addConfig('user.email', req.user.github))
+
             .then(response => git(projectRoot).add('*'))
             .then(response => git(projectRoot).commit("first commit!"))
             .then(response => git(projectRoot).addRemote('origin', repoUrl))
@@ -91,7 +96,6 @@ function _initAndPush(repoData, req){
     Object.assign(repoData.project, {git: gitUrl, https: cloneUrl});
     return _pushProject(repoData.project.projectRoot, repoUrl, repoData.project, req)
 }
-
 
 function _sendErrorNotification(project, req, err) {
     Object.assign(req, {
@@ -172,8 +176,10 @@ function getToken(req) {
             },
             json: true,
         };
+        console.log('GIT OPTIONS', options);
         request(options)
             .then((tokenInfo) => {
+                console.log('tokenInfo', tokenInfo);
                 console.log(`github-access-token is, ${tokenInfo.access_token}`);
                 resolve(tokenInfo.access_token);
             })
