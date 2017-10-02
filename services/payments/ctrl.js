@@ -88,6 +88,17 @@ function getSubscription(req) {
     })
 }
 
+function getSubscriptions(req) {
+    return new Promise((resolve, reject) => {
+        if (!req.user.stripe) return resolve({});
+
+        stripe.subscriptions.list({customer: req.user.stripe.customerId,status:'all'}, (err, subscriptions) => {
+            if (err) return reject(Response.onError(null, err.message, 400));
+            return resolve(subscriptions);
+        });
+
+    })
+}
 function createSubscription(req) {
     return new Promise((resolve, reject) => {
         if (req.user.stripe && req.user.stripe.subscriptionId) {
@@ -296,12 +307,48 @@ function retrieveUpcomingInvoice(customerId, subscribtionId) {
     return stripe.invoices.retrieveUpcoming(customerId, {subscription: subscribtionId})
 }
 
+function checkLastSubscriptions(req) {
+    return new Promise((resolve, reject) => {
+        stripe.subscriptions.list({customer: req.user.stripe.customerId, status:'all'}, (err, subscriptions) => {
+            if (err) return reject(Response.onError(null, err.message, 400));
+            if(subscriptions.data[0] && subscriptions.data[0].status === 'canceled') return resolve({status: 'canceled'});
+            return resolve({status:'active'});
+        });
+    })
+}
+function createSubscripitionPlan(req) {
+    return new Promise((resolve, reject) => {
+        if (_.isUndefined(req.body.planId)) {
+            return reject(Response.onError(null, `Provide planId!`, 400));
+        }
+        stripe.subscriptions.create({customer: req.user.stripe.customerId, plan: req.body.planId}, (err, subscription) => {
+            if (err) return reject(Response.onError(null, err.message, 400));
+
+            const payment = {stripe: req.user.stripe, planId: subscription.plan.id};
+            Object.assign(payment.stripe, {subscriptionId: subscription.id});
+            let query = {};
+            Object.assign(query, {$set: payment});
+            User.findOneAndUpdate({username: req.user.username}, query, {new: true})
+                .then(user => resolve(user))
+                .catch(e => reject(e))
+        });
+    })
+
+}
 function upgradeSubscription(req) {
+
     return new Promise((resolve, reject) => {
         createToken(req.body.card)
             .then((token) => createSource(req.user.stripe.customerId, token.id))
             .then((source) => updateCustomerDefault(req.user.stripe.customerId, source.id))
-            .then((customer) => updateSubscriptionPlan(req.user.stripe.subscriptionId, req.body.planId))
+            .then((customer) => checkLastSubscriptions(req))
+            .then((response) => {
+                if(response.status === 'active') {
+                    return updateSubscriptionPlan(req.user.stripe.subscriptionId, req.body.planId)
+                } else if(response.status === 'canceled') {
+                    return createSubscripitionPlan(req)
+                }
+            })
             // .then((subscription) => retrieveUpcomingInvoice(req.user.stripe.customerId, subscription.id))
             // .then((upcoming) => payInvoice(upcoming))
             .then((final) => resolve(final))
@@ -333,6 +380,7 @@ module.exports = {
     createSubscription,
     updateSubscription,
     deleteSubscription,
+    getSubscriptions,
     createPlan,
     getPlans,
     getCharges,

@@ -56,23 +56,6 @@ paymentsResponder.on('getCustomer', (req, cb) => {
         })
 });
 
-paymentsResponder.on('createSubscription', (req, cb) => {
-    Check.ifTokenValid(req)
-        .then(user => {
-            Object.assign(req, {user: user});
-            return Ctrl.createSubscription(req);
-        })
-        .then(subscriptionCreated => {
-            Object.assign(req, subscriptionCreated);
-            return Ctrl.updateUser(req);
-        })
-        .then(response => cb(null, response))
-        .catch(err => {
-            console.log('stripe Customer create err', err);
-            return cb(err, null);
-        })
-});
-
 paymentsResponder.on('updateCustomer', (req, cb) => {
     Check.ifTokenValid(req)
         .then(user => {
@@ -104,43 +87,19 @@ paymentsResponder.on('deleteCustomer', (req, cb) => {
         })
 });
 
-paymentsResponder.on('getSubscription', (req, cb) => {
+paymentsResponder.on('createSubscription', (req, cb) => {
     Check.ifTokenValid(req)
         .then(user => {
             Object.assign(req, {user: user});
-            return Ctrl.getSubscription(req);
+            return Ctrl.createSubscription(req);
+        })
+        .then(subscriptionCreated => {
+            Object.assign(req, subscriptionCreated);
+            return Ctrl.updateUser(req);
         })
         .then(response => cb(null, response))
         .catch(err => {
-            console.log('stripe Customer update err', err);
-            return cb(err, null);
-        })
-});
-
-paymentsResponder.on('getPlans', (req, cb) => {
-    Check.ifTokenValid(req)
-        .then(user => {
-            Object.assign(req, {user: user});
-            return Ctrl.getPlans(req);
-        })
-        .then(response => cb(null, response))
-        .catch(err => {
-            console.log('stripe Customer update err', err);
-            return cb(err, null);
-        })
-});
-
-
-
-paymentsResponder.on('createPlan', (req, cb) => {
-    Check.ifTokenValid(req)
-        .then(user => {
-            Object.assign(req, {user: user});
-            return Ctrl.createPlan(req);
-        })
-        .then(response => cb(null, response))
-        .catch(err => {
-            console.log('create plan', err);
+            console.log('stripe Customer create err', err);
             return cb(err, null);
         })
 });
@@ -175,6 +134,71 @@ paymentsResponder.on('deleteSubscription', (req, cb) => {
         .then(response => cb(null, response))
         .catch(err => {
             console.log('stripe subscription update err', err);
+            return cb(err, null);
+        })
+});
+
+paymentsResponder.on('upgradeSubscription', (req, cb) => {
+    Check.ifTokenValid(req)
+        .then(user => {
+            Object.assign(req, {user: user});
+            return Ctrl.upgradeSubscription(req);
+        })
+        .then(response => cb(null, response))
+        .catch(err => {
+            console.log('upgradeSubscribtionError', err);
+            cb(err, null)
+        })
+});
+
+paymentsResponder.on('getSubscription', (req, cb) => {
+    Check.ifTokenValid(req)
+        .then(user => {
+            Object.assign(req, {user: user});
+            return Ctrl.getSubscription(req);
+        })
+        .then(response => cb(null, response))
+        .catch(err => {
+            console.log('stripe get subscription err', err);
+            return cb(err, null);
+        })
+});
+
+paymentsResponder.on('getSubscriptions', (req, cb) => {
+    Check.ifTokenValid(req)
+        .then(user => {
+            Object.assign(req, {user: user});
+            return Ctrl.getSubscriptions(req);
+        })
+        .then(response => cb(null, response))
+        .catch(err => {
+            console.log('stripe get subscriptions err', err);
+            return cb(err, null);
+        })
+});
+
+paymentsResponder.on('getPlans', (req, cb) => {
+    Check.ifTokenValid(req)
+        .then(user => {
+            Object.assign(req, {user: user});
+            return Ctrl.getPlans(req);
+        })
+        .then(response => cb(null, response))
+        .catch(err => {
+            console.log('stripe Customer update err', err);
+            return cb(err, null);
+        })
+});
+
+paymentsResponder.on('createPlan', (req, cb) => {
+    Check.ifTokenValid(req)
+        .then(user => {
+            Object.assign(req, {user: user});
+            return Ctrl.createPlan(req);
+        })
+        .then(response => cb(null, response))
+        .catch(err => {
+            console.log('create plan', err);
             return cb(err, null);
         })
 });
@@ -232,19 +256,6 @@ paymentsResponder.on('getInvoices', (req, cb) => {
         })
 });
 
-paymentsResponder.on('upgradeSubscription', (req, cb) => {
-    Check.ifTokenValid(req)
-        .then(user => {
-            Object.assign(req, {user: user});
-            return Ctrl.upgradeSubscription(req);
-        })
-        .then(response => cb(null, response))
-        .catch(err => {
-            console.log('upgradeSubscribtionError', err);
-            cb(err, null)
-        })
-});
-
 paymentsResponder.on('upcomingInvoices', (req, cb) => {
     Check.ifTokenValid(req)
         .then(user => {
@@ -257,7 +268,6 @@ paymentsResponder.on('upcomingInvoices', (req, cb) => {
             cb(err, null)
         })
 });
-
 
 //authResponder.on('*', console.log);
 

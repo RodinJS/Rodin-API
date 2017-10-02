@@ -69,6 +69,16 @@ function deleteSubscription(req, res, next){
     return _submit(req, res, params);
 }
 
+function upgradeSubscription(req, res, next) {
+    const params = { type:'upgradeSubscription'};
+    return _submit(req, res, params);
+}
+
+function getSubscriptions(req,res,next) {
+    const params = { type:'getSubscriptions'};
+    return _submit(req, res, params);
+}
+
 function getPlans(req, res, next) {
     const params = { type:'getPlans'};
     return _submit(req, res, params);
@@ -80,6 +90,11 @@ function createPlan(req, res, next) {
 }
 
 
+function getTokens(req, res, next) {
+    const params = { type:'getTokens'};
+    return _submit(req, res, params);
+}
+
 function createToken(req, res, next) {
     const params = { type:'createToken'};
     return _submit(req, res, params);
@@ -90,19 +105,8 @@ function getCharges(req, res, next){
     return _submit(req, res, params);
 }
 
-
-function getTokens(req, res, next) {
-    const params = { type:'getTokens'};
-    return _submit(req, res, params);
-}
-
 function getInvoices(req, res, next) {
     const params = { type:'getInvoices'};
-    return _submit(req, res, params);
-}
-
-function upgradeSubscription(req, res, next) {
-    const params = { type:'upgradeSubscription'};
     return _submit(req, res, params);
 }
 
@@ -129,6 +133,7 @@ module.exports = {
     createSubscription:createSubscription,
     updateSubscription:updateSubscription,
     deleteSubscription:deleteSubscription,
+    getSubscriptions: getSubscriptions,
     getPlans:getPlans,
     createPlan: createPlan,
     getCharges: getCharges,
