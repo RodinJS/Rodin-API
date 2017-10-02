@@ -399,6 +399,15 @@ function syncSingleProjects(req){
     })
 }
 
+function clone(user, repo_url, projectRoot){
+
+    return git(projectRoot)
+        .init()
+        .then(response=> git(projectRoot).addConfig('user.email', user.github))
+        .then(response=> git().clone(repo_url, [projectRoot]))
+
+}
+
 
 module.exports = {
     getToken: getToken,
@@ -408,5 +417,6 @@ module.exports = {
     ours: ours,
     successSync: successSync,
     syncProjects: syncProjects,
-    syncSingleProjects:syncSingleProjects
+    syncSingleProjects:syncSingleProjects,
+    clone:clone
 };

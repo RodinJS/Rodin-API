@@ -19,6 +19,7 @@ const ProjectTemplates = require('../../models/projectTemplate');
 const RDSendgrid = require('../../common/sendgrid');
 const transpiler = require('./transpiler');
 const userCapacity = require('../../common/directorySize');
+const git = require('../git/ctrl');
 const sg = sendgrid('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');
 
 
@@ -176,13 +177,13 @@ function create(req) {
 
                 //TODO: Implement later git clone during create
 
-                /* if (req.body.githubUrl) { // RO-243 #create project from git repo
-                 git.clone(req.user.username, help.cleanUrl(req.body.githubUrl), rootDir)
-                 .catch(e => {
-                 const err = new APIError('GitHub project does not exist!', httpStatus.REPO_DOES_NOT_EXIST, true);
-                 return next(err);
-                 });
-                 }*/
+                 if (req.body.githubUrl) {
+                     git.clone(req.user, utils.cleanUrl(req.body.githubUrl), rootDir)
+                     .catch(e => reject(Response.onError(err, `GitHub project does not exist!`, 353)))/*{
+                         const err = new APIError('GitHub project does not exist!', httpStatus.REPO_DOES_NOT_EXIST, true);
+                         return next(err);
+                     });*/
+                 }
                 return _updateUser(req, savedProject)
             })
             .then(project => resolve(project))
