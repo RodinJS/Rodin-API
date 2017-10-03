@@ -405,11 +405,11 @@ function clone(user, repo_url, projectRoot){
     console.log('clone projectRoot: ', projectRoot);
     console.log('clone user.github: ', user.github);
     if(user.github) {
-        return git().clone(repo_url, projectRoot)
+        return git(projectRoot).clone(repo_url, '.')
             .then(response=> git(projectRoot).addConfig('user.email', user.github))
             .catch(e => Response.onError(e, `Can't clone from GitHub.`, 400))
     } else {
-        return git().clone(repo_url, projectRoot)
+        return git(projectRoot).clone(repo_url, '.')
             .catch(e => Response.onError(e, `Can't clone from GitHub.`, 400))        
     }
 }
