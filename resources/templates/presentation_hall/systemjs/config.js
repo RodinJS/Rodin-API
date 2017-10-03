@@ -2,7 +2,7 @@
 
     var paths = {
         'npm:': 'https://cdn.rodin.io/v0.0.7/',
-        'modules:': '/modules'
+        'modules:': 'https://api.rodinapp.com/modules'
     };
 
     var map = {
@@ -63,12 +63,14 @@
             'https://cdnjs.cloudflare.com/*':{
                 authorization: false
             },
+            'https://api.rodinapp.com/*': {
+                authorization: false
+            },
             '*': {
                 authorization: true
             }
         }
     };
-    //https://cdnjs.cloudflare.com/
 
     System.config(config);
 
