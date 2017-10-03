@@ -401,12 +401,11 @@ function syncSingleProjects(req){
 
 function clone(user, repo_url, projectRoot){
 
-    return git(projectRoot).addConfig('user.email', user.github)
-        .then(response=> git().clone(repo_url, [projectRoot]))
+    return git(projectRoot).clone(repo_url, [projectRoot])
+        .then(response=> git(projectRoot).addConfig('user.email', user.github))
         .catch(e => Response.onError(e, `Can't clone from GitHub.`, 400))
 
 }
-
 
 module.exports = {
     getToken: getToken,
