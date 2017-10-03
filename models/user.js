@@ -75,14 +75,14 @@ const UserSchema = new mongoose.Schema({
     },
     allowProjectsCount: {
         type: Number,
-        enum: [2, 5, 10],
-        default: 2,
+        enum: [2, 5, 10, 50],
+        default: 50, //2
 
     },
     storageSize: {
         type: Number,
         enum: [100, 1000, 5000],
-        default: 100,
+        default: 1000, //100
     },
     profile: {
         firstName: {
