@@ -404,11 +404,14 @@ function clone(user, repo_url, projectRoot){
     console.log('clone repo_url: ', repo_url);
     console.log('clone projectRoot: ', projectRoot);
     console.log('clone user.github: ', user.github);
-
-    return git().clone(repo_url, [projectRoot])
-        .then(response=> git(projectRoot).addConfig('user.email', user.github))
-        .catch(e => Response.onError(e, `Can't clone from GitHub.`, 400))
-
+    if(user.github) {
+        return git().clone(repo_url, [projectRoot])
+            .then(response=> git(projectRoot).addConfig('user.email', user.github))
+            .catch(e => Response.onError(e, `Can't clone from GitHub.`, 400))
+    } else {
+        return git().clone(repo_url, [projectRoot])
+            .catch(e => Response.onError(e, `Can't clone from GitHub.`, 400))        
+    }
 }
 
 module.exports = {
