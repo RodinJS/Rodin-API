@@ -515,14 +515,12 @@ function updateConversation(req) {
         return _submit(getOptions)
             .then(response => {
                 // let tags = _.uniq(_.concat(req.body.tags, response.item.tags)).filter(tag => tag);
-                console.log(req.body.tags)
                 Object.assign(options.body, {
                     subject: req.body.subject || response.item.subject,
                     status: req.body.status || response.item.status,
                     tags: req.body.tags || [],
                     reload: true
                 });
-                console.log(options.body.tags)
                 return _initVoting(req, response, mailbox);
             })
             .then(voteField => {
