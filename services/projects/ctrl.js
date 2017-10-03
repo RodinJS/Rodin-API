@@ -178,11 +178,11 @@ function create(req) {
                 //TODO: Implement later git clone during create
 
                  if (req.body.githubUrl) {
-                     git.clone(req.user, utils.cleanUrl(req.body.githubUrl), rootDir)
-                     .catch(e => reject(Response.onError(err, `GitHub project does not exist!`, 353)))/*{
-                         const err = new APIError('GitHub project does not exist!', httpStatus.REPO_DOES_NOT_EXIST, true);
-                         return next(err);
-                     });*/
+                    console.log('req.user: ', req.user);
+                    console.log('req.body.githubUrl: ', utils.cleanUrl(req.body.githubUrl));
+                    console.log('rootDir: ', rootDir);
+                    git.clone(req.user, utils.cleanUrl(req.body.githubUrl), rootDir)
+                        .catch(e => reject(Response.onError(err, `GitHub project does not exist!`, 353)));
                  }
                 return _updateUser(req, savedProject)
             })
