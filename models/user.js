@@ -69,8 +69,8 @@ const UserSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['thinker', 'david', 'liberty', 'Admin', 'God'],
-        default: 'thinker',
+        enum: ['Free', 'Premium', 'Enterprise', 'Admin', 'God'],
+        default: 'Free',
         required: true,
     },
     allowProjectsCount: {
