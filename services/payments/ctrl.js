@@ -62,6 +62,7 @@ function updateCustomer(req) {
         createToken(req.body.card)
             .then((token) => createSource(req.user.stripe.customerId, token.id))
             .then((source) => updateCustomerDefault(req.user.stripe.customerId, source.id))
+            .then((response) => resolve(response))
             .catch((err) => reject(Response.onError(null, err.message, 400)))
     })
 }
