@@ -3,9 +3,9 @@
  */
 
 // jscs:disable validateIndentation
-const Promise  =  require('bluebird');
+const Promise = require('bluebird');
 const mongoose = require('mongoose');
-const bcrypt =  require('bcrypt-nodejs');
+const bcrypt = require('bcrypt-nodejs');
 const _ = require('lodash');
 const httpStatus = require('../common/httpStatus');
 const APIError = require('../common/APIError');
@@ -69,20 +69,20 @@ const UserSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['Free', 'Premium', 'Enterprise', 'Admin', 'God'],
-        default: 'Free',
+        enum: ['thinker', 'david', 'liberty', 'Admin', 'God'],
+        default: 'thinker',
         required: true,
     },
     allowProjectsCount: {
         type: Number,
-        enum: [2, 5, 10, 50],
-        default: 50, //2
+        enum: [5, 15, 500],
+        default: 5, //2
 
     },
     storageSize: {
         type: Number,
-        enum: [100, 1000, 5000],
-        default: 1000, //100
+        enum: [500, 5000, 200000],
+        default: 500, //100
     },
     profile: {
         firstName: {
@@ -127,17 +127,17 @@ const UserSchema = new mongoose.Schema({
         default: Date.now,
     },
     github: {
-        id: { type: String },
-        token:  { type: String },
-        email: { type: String },
+        id: {type: String},
+        token: {type: String},
+        email: {type: String},
     },
     facebook: {
-        id: { type: String },
-        email: { type: String },
+        id: {type: String},
+        email: {type: String},
     },
     google: {
-        id: { type: String },
-        email: { type: String },
+        id: {type: String},
+        email: {type: String},
     },
     steamId: {
         type: String,
@@ -154,21 +154,21 @@ const UserSchema = new mongoose.Schema({
             },
         },
     },
-    resetPasswordToken: { type: String },
-    resetPasswordExpires: { type: Date },
+    resetPasswordToken: {type: String},
+    resetPasswordExpires: {type: Date},
     usernameConfirmed: {
         type: Boolean,
     },
     notification: {
         type: Boolean,
-        default:true
+        default: true
     },
     stripe: {
         customerId: String,
         subscriptionId: String,
     },
-    invitationCode:{
-        type:String
+    invitationCode: {
+        type: String
     }
 });
 
@@ -199,7 +199,7 @@ UserSchema.method({
         return new Promise((resolve, reject) => {
             bcrypt.compare(candidatePassword, this.password, (err, isMatch) => {
                 if (err) return reject(err);
-                if(!isMatch) return reject(false);
+                if (!isMatch) return reject(false);
                 return resolve(true);
             });
         });
@@ -219,7 +219,7 @@ UserSchema.statics = {
     get(username) {
 
         username = username.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
-        return this.findOne({ username: new RegExp('^' + username + '$', 'i') })
+        return this.findOne({username: new RegExp('^' + username + '$', 'i')})
             .execAsync().then((user) => {
                 if (user) {
                     return user;
@@ -236,7 +236,7 @@ UserSchema.statics = {
      */
     getPermission(username, id) {
         username = username.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
-        return this.findOne({ username: new RegExp('^' + username + '$', 'i') }) // eslint-disable-line
+        return this.findOne({username: new RegExp('^' + username + '$', 'i')}) // eslint-disable-line
             .execAsync().then((user) => {
                 if (user) {
                     for (let i = 0; i < user.projects.length; i++) {
@@ -263,9 +263,9 @@ UserSchema.statics = {
      * @param {number} limit - Limit number of users to be returned.
      * @returns {Promise<User[]>}
      */
-    list({ skip = 0, limit = 50 } = {}) {
+    list({skip = 0, limit = 50} = {}) {
         return this.find()
-            .sort({ createdAt: -1 })
+            .sort({createdAt: -1})
             .skip(skip)
             .limit(limit)
             .execAsync();
@@ -281,11 +281,11 @@ const Model = mongoose.model('User', UserSchema);
 /**
  * Migrations
  */
-Model.update({'notification': {$exists : false}}, {$set: {'notification': true}}, {multi: true}).exec()
-    .then(response=>{
+Model.update({'notification': {$exists: false}}, {$set: {'notification': true}}, {multi: true}).exec()
+    .then(response => {
         console.log('response', response);
     })
-    .catch(err=>{
+    .catch(err => {
         console.log('err', err);
     })
 
