@@ -2,7 +2,7 @@
 
     var paths = {
         'npm:': 'https://cdn.rodin.io/v0.0.7/',
-        'modules:': 'https://api.rodinapp.com/modules'
+        'modules:': 'https://api.rodin.space/modules'
     };
 
     var map = {
@@ -63,7 +63,7 @@
             'https://cdnjs.cloudflare.com/*':{
                 authorization: false
             },
-            'https://api.rodinapp.com/*': {
+            'https://api.rodin.space/*': {
                 authorization: false
             },
             '*': {
