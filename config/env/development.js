@@ -6,8 +6,9 @@ module.exports = {
     editorURL: 'https://editor.rodin.space',
     port: 3000,
     socketPort: 4000,
-    host:'http://api.rodin.space',
-    socketURL: 'http://localhost:5000',
+    host:'https://api.rodin.space',
+    subscriptionURL: 'https://api.rodin.space',
+    socketURL: 'https://wss.rodin.space',
     modules: {
         socketService: {
             port: 5000,
