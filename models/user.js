@@ -288,6 +288,13 @@ Model.update({'notification': {$exists: false}}, {$set: {'notification': true}},
     .catch(err => {
         console.log('err', err);
     })
-
+    
+Model.update({'domain': {$exists: true}}, {$unset: {'domain': 1}}, {multi: true}).exec()
+    .then(response => {
+        console.log('response', response);
+    })
+    .catch(err => {
+        console.log('err', err);
+    })
 
 module.exports = Model;
