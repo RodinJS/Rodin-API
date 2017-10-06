@@ -1,3 +1,4 @@
+const fs = require('fs');
 const _ =  require('lodash');
 const cp = require('child_process');
 const request = require('request-promise');
@@ -20,6 +21,11 @@ function projectTranspile(req) {
         userBuffer[req.user.username].kill();
         delete  userBuffer[req.user.username];
     }
+
+    let systemjs = config.stuff_path + 'projects/' + req.user.username + '/' + req.project.root + '/systemjs';
+    if (!fs.existsSync(systemjs)) {
+        return;
+    } 
 
     let folderPath = help.generateFilePath(req, '');
     let excecutorParams = {};
