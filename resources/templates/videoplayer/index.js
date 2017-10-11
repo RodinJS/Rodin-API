@@ -3,8 +3,8 @@
  RODIN.start();
 
  let player = new RODIN.MaterialPlayer({
-     HD: "video/rodin2k.mp4",
-     SD: "video/rodin2k.mp4",
+     HD: "video/Pedrabonita2k.mp4",
+     SD: "video/Pedrabonita1k.mp4",
      default: "HD"
  });
 
