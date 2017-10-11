@@ -9,6 +9,21 @@ const Response = require('../../common/servicesResponses');
 const stripeKeys = config.payments.tokens.stripe;
 const stripe = require('stripe')(stripeKeys.secret);
 
+// TODO: move this to env config.
+const roles = [
+    'Free': {
+        allowProjectsCount: 5,
+        storageSize: 500
+    },    
+    'Premium': {
+        allowProjectsCount: 15,
+        storageSize: 5000
+    },    
+    'Enterprise': {
+        allowProjectsCount: 500,
+        storageSize: 200000
+    }
+];
 
 function getCustomer(req) {
     return new Promise((resolve, reject) => {
@@ -172,6 +187,8 @@ function updateUser(req) {
         if (updatingData) {
             if (req.payment.planId) {
                 updatingData.role = req.payment.planId;
+                updatingData.allowProjectsCount = roles[req.payment.planId].allowProjectsCount || 5;
+                updatingData.storageSize = roles[req.payment.planId].storageSize || 500;
                 delete updatingData.planId;
             }
             Object.assign(query, {$set: updatingData})
