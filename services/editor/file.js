@@ -169,7 +169,7 @@ function _processUpload(req, folderPath) {
     const PromisifiedFS = Promise.promisifyAll(fs);
     const promises = req.files.map((file) => {
       const filePath = `${folderPath}/${file.originalname}`;
-      const writeFile = PromisifiedFS.writeFileAsync(filePath, file.buffer);
+      const writeFile = PromisifiedFS.writeFileAsync(filePath, Buffer.from(file.buffer));
       if (fs.existsSync(filePath)) {
         return PromisifiedFS.chmodAsync(filePath, 0o755);
       }
