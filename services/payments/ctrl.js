@@ -10,7 +10,7 @@ const stripeKeys = config.payments.tokens.stripe;
 const stripe = require('stripe')(stripeKeys.secret);
 
 // TODO: move this to env config.
-const roles = [
+const roles = {
     'Free': {
         allowProjectsCount: 5,
         storageSize: 500
@@ -22,8 +22,8 @@ const roles = [
     'Enterprise': {
         allowProjectsCount: 500,
         storageSize: 200000
-    }
-];
+    },
+};
 
 function getCustomer(req) {
     return new Promise((resolve, reject) => {
