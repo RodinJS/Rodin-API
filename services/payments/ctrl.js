@@ -369,7 +369,11 @@ function upgradeSubscription(req) {
             })
             // .then((subscription) => retrieveUpcomingInvoice(req.user.stripe.customerId, subscription.id))
             // .then((upcoming) => payInvoice(upcoming))
-            .then((final) => resolve(final))
+            .then((final) => {
+                const payment = {stripe: {}};
+                Object.assign(payment.stripe, {planId: req.body.planId});
+                return resolve({message: `Customer created successfully`, payment: payment});
+            })
             .catch((err) => reject(Response.onError(null, err.message, 400)))
     })
 }
