@@ -164,24 +164,13 @@ function upload(req, filePath) {
  * @private
  */
 function _processUpload(req, folderPath) {
-
   return new Promise((resolve, reject) => {
-    const PromisifiedFS = Promise.promisifyAll(fs);
-    const promises = req.files.map((file) => {
-      const filePath = `${folderPath}/${file.originalname}`;
-      const writeFile = PromisifiedFS.writeFileAsync(filePath, Buffer.from(file.buffer));
-      if (fs.existsSync(filePath)) {
-        return PromisifiedFS.chmodAsync(filePath, 0o755);
-      }
-      else {
-        return writeFile;
-      }
-    });
-    Promise.all(promises)
-      .then(() => resolve(true))
-      .catch((error) => reject({error: 'Upload error', code: httpStatus.BAD_REQUEST}))
+    for (var prop in req.filenames) {
+        fsExtra.move(`resources/uploads/tmp/${prop}`, `${folderPath}/${req.filenames[prop]}`)
+          .then(() => resolve(true))
+          .catch((error) => reject({error: 'File Move operation error', code: httpStatus.BAD_REQUEST}))
+    }
   })
-
 }
 
 /**

@@ -3,77 +3,92 @@
     {
       "name": "core",
       "script": "core/index.js",
-      "watch": "core/**/*.js"
+      "watch": "core/**/*.js",
+      "node_args": "--max-old-space-size=8192 --inspect"
     },
     {
       "name": "monitor",
       "script": "core/monitor.js",
-      "watch": "core/monitor.js"
+      "watch": "core/monitor.js",
+      "node_args": "--max-old-space-size=8192"
     },
     {
       "name": "authService",
       "script": "services/auth/index.js",
-      "watch": "services/auth/**/*.js"
+      "watch": "services/auth/**/*.js",
+      "node_args": "--max-old-space-size=8192"
     },
     {
       "name": "userService",
       "script": "services/user/index.js",
-      "watch": "services/user/**/*.js"
+      "watch": "services/user/**/*.js",
+      "node_args": "--max-old-space-size=8192"
     },
     {
       "name": "projectsService",
       "script": "services/projects/index.js",
-      "watch": "services/projects/**/*.js"
+      "watch": "services/projects/**/*.js",
+      "node_args": "--max-old-space-size=8192"
     },
     {
       "name": "buildService",
       "script": "services/build/index.js",
-      "watch": "services/build/**/*.js"
+      "watch": "services/build/**/*.js",
+      "node_args": "--max-old-space-size=8192"
     },
     {
       "name": "hooksService",
       "script": "services/hooks/index.js",
-      "watch": "services/hooks/**/*.js"
+      "watch": "services/hooks/**/*.js",
+      "node_args": "--max-old-space-size=8192"
     },
     {
       "name": "gitService",
       "script": "services/git/index.js",
-      "watch": "services/git/**/*.js"
+      "watch": "services/git/**/*.js",
+      "node_args": "--max-old-space-size=8192"
     },
     {
       "name": "socketServerService",
       "script": "services/socketServer/index.js",
-      "watch": "services/socketServer/**/*.js"
+      "watch": "services/socketServer/**/*.js",
+      "node_args": "--max-old-space-size=8192"
     },
     {
       "name": "paymentsService",
       "script": "services/payments/index.js",
-      "watch": "services/payments/**/*.js"
+      "watch": "services/payments/**/*.js",
+      "node_args": "--max-old-space-size=8192"
     },
     {
       "name": "editorService",
       "script": "services/editor/index.js",
-      "watch": "services/editor/**/*.js"
+      "watch": "services/editor/**/*.js",
+      "node_args": "--max-old-space-size=8192"
     },
     {
       "name": "supportService",
       "script": "services/support/index.js",
-      "watch": "services/support/**/*.js"
+      "watch": "services/support/**/*.js",
+      "node_args": "--max-old-space-size=8192"
     },
     {
       "name": "pagesService",
       "script": "services/pages/index.js",
-      "watch": "services/pages/**/*.js"
+      "watch": "services/pages/**/*.js",
+      "node_args": "--max-old-space-size=8192"
     },
     {
       "name": "modulesService",
       "script": "services/modules/index.js",
-      "watch": "services/modules/**/*.js"
+      "watch": "services/modules/**/*.js",
+      "node_args": "--max-old-space-size=8192"
     },
     {
       "name": "customDomainService",
       "script": "services/customDomain/index.js",
-      "watch": "services/customDomain/**/*.js"
+      "watch": "services/customDomain/**/*.js",
+      "node_args": "--max-old-space-size=8192"
     }
 
 

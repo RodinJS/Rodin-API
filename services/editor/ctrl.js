@@ -231,11 +231,10 @@ function searchInsideFiles(req) {
 }
 
 function uploadFiles(req) {
-
     return new Promise((resolve, reject) => {
-        if (_.isUndefined(req.files) || req.files.length < 0) {
-            return reject(Response.onError(null, `Please select at least one file`, 400));
-        }
+        // if (_.isUndefined(req.files) || req.files.length < 0) { //move to requester
+        //     return reject(Response.onError(null, `Please select at least one file`, 400));
+        // }
 
         if (_.isUndefined(req.body.path)) {
             return reject(Response.onError(null, `Please provide destination path!`, 400));
@@ -310,6 +309,7 @@ function uploadFiles(req) {
                     message: 'Following files exists, please provide action (replace, rename)',
                 })
             }
+
             return File.upload(req, folderPath)
                 .then(uploaded => _fileOnSuccess(req))
                 .then(updated => resolve(`Files successfully uploaded!`))

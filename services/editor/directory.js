@@ -120,43 +120,33 @@ function upload(req, folderPath) {
  * @private
  */
 function _processUpload(req, folderPath) {
-
     return new Promise((resolve, reject) => {
-
         //if env is local put absolute path
         if(!config.stuff_path) folderPath = `${__dirname}/../../${folderPath}`;
 
-        const PromisifiedFS = Promise.promisifyAll(fs);
-        const promises = req.files.map((file) => {
-            const filePath = `${folderPath}/${file.originalname}`;
-            const writeFile = PromisifiedFS.writeFileAsync(filePath, new Buffer(file.buffer));
-            if (fs.existsSync(filePath))
-                return PromisifiedFS.chmodAsync(filePath, 0o755);
-            else
-                return writeFile;
-        });
-        const zipFile = folderPath + '/' + req.files[0].originalname;
+        for (var prop in req.filenames) {
+            fsExtra.move(`resources/uploads/tmp/${prop}`, `${folderPath}/${prop}`)
+                .then(() => {
+                    const zipFile = folderPath + prop;
+                    extract(zipFile, {dir: folderPath}, (err) => {
+                        if (err) return reject(err);
 
-        Promise.all(promises).then(() => {
+                        if (!fs.existsSync(zipFile)) return reject({error: 'Upload error-', code: httpStatus.BAD_REQUEST});
 
-            extract(zipFile, {dir: folderPath}, (err) => {
-                if (err) return reject(err);
+                        fs.unlink(zipFile, (err) => {
+                            if (err) return reject(err);
+                            fs.readdirSync(folderPath).forEach((file, index) => {
+                                var curPath = folderPath + '/' + file;
+                                fs.chmodSync(curPath, 0o755);
+                            });
+                            resolve(true);
+                        });
 
-                if (!fs.existsSync(zipFile)) return reject({error: 'Upload error-', code: httpStatus.BAD_REQUEST});
-
-                fs.unlink(zipFile, (err) => {
-                    if (err) return reject(err);
-                    fs.readdirSync(folderPath).forEach((file, index) => {
-                        var curPath = folderPath + '/' + file;
-                        fs.chmodSync(curPath, 0o755);
                     });
-                    resolve(true);
-                });
-
-            });
-        }).catch((error) => reject(error));
+                })
+                .catch((error) => reject({error: 'Folder Move operation error', code: httpStatus.BAD_REQUEST}))
+        }
     });
-
 }
 
 

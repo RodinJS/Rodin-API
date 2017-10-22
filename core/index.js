@@ -18,7 +18,7 @@ const modulesRequest = require('./requesters/modules');
 const app = express();
 const server = require('http').Server(app);
 
-app.use(bodyParser.json({limit: '20mb'}));
+app.use(bodyParser.json({limit: '2000mb'}));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(compress());
