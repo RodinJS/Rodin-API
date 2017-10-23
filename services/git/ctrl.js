@@ -408,10 +408,12 @@ function clone(user, repo_url, projectRoot){
     if (!fs.existsSync(projectRoot)) fs.mkdirSync(projectRoot);
     console.log('clone 2. fs.existsSync(projectRoot): ', fs.existsSync(projectRoot));
     if(user.github) {
+        console.log('clone if. fs.existsSync(projectRoot): ', fs.existsSync(projectRoot));
         return git().clone(repo_url, projectRoot)
             .then(response=> git(projectRoot).addConfig('user.email', user.github))
             .catch(e => Response.onError(e, `Can't clone from GitHub.`, 400))
     } else {
+        console.log('clone else. fs.existsSync(projectRoot): ', fs.existsSync(projectRoot));
         return git().clone(repo_url, projectRoot)
             .catch(e => Response.onError(e, `Can't clone from GitHub.`, 400))        
     }
