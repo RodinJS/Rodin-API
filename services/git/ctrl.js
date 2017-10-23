@@ -404,6 +404,9 @@ function clone(user, repo_url, projectRoot){
     console.log('clone repo_url: ', repo_url);
     console.log('clone projectRoot: ', projectRoot);
     console.log('clone user.github: ', user.github);
+    console.log('clone 1. fs.existsSync(projectRoot): ', fs.existsSync(projectRoot));
+    if (!fs.existsSync(projectRoot)) fs.mkdirSync(projectRoot);
+    console.log('clone 2. fs.existsSync(projectRoot): ', fs.existsSync(projectRoot));
     if(user.github) {
         return git().clone(repo_url, projectRoot)
             .then(response=> git(projectRoot).addConfig('user.email', user.github))
